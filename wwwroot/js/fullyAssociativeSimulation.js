@@ -1,21 +1,16 @@
-﻿var DirectMappedSimulation = {
+﻿var FullyAssociativeSimulation = {
     currentStep: 0,
-    currentInstruction: 0,
-    index: 0,
-    isValid: 0,
-    isHit: 0,
-    currentMemoryAddress: 0,
 
     startSimulation: function (simulationParameters) {
-        CacheTableCreator.drawDirectMappedCache();
+        //CacheTableCreator.drawDirectMappedCache();  
 
         $.ajax({
             type: "POST",
             async: false,
-            url: "/DirectMappedCacheSimulation/DirectMappedCache",
+            url: "/FullyAssociativeCacheSimulation/FullyAssociativeCache",
             data: { simulationParameters: simulationParameters },
             success: function () {
-                DirectMappedSimulation.nextStep();
+                FullyAssociativeSimulation.nextStep();
             },
             error: function () {
             }
@@ -83,79 +78,22 @@
         }
         else {
             this.isHit = 0;
-            Simulation.updateButtons();
+            DirectMappedSimulation.updateButtons();
         }
-    },
-
-    nextInstruction: function () {
-        this.currentStep = 0;
-        this.currentInstruction++;
-
-        $("#nextStepButton").attr("hidden", false);
-        $("#nextInstructionButton").attr("hidden", true);
-
-        $("#addressRow").removeAttr('class');
-        $("#cacheRow-" + this.index).removeAttr('class');
-        $("#valid-" + DirectMappedSimulation.index).removeAttr('class');
-        $("#tag-" + DirectMappedSimulation.index).removeAttr('class');
-        $("#data-" + DirectMappedSimulation.index).removeAttr('class');
-        $("#memory-" + DirectMappedSimulation.currentMemoryAddress).removeClass('highlight');
-        $("#tagValue").removeAttr('class');
-
-        Simulation.highlightCurrentInstruction(this.currentInstruction);
-
-        $.ajax({
-            type: 'POST',
-            url: 'DirectMappedCacheSimulation/NextInstruction'
-        });
-    },
-
-    finish: function () {
-        location.reload();
-
-        $.ajax({
-            type: 'POST',
-            url: "/DirectMappedCacheSimulation/Reset"
-        });
     },
 
     addressBreakdown: function () {
         $.ajax({
             type: 'GET',
             async: false,
-            url: '/DirectMappedCacheSimulation/GetCurrentAddressBreakdown',
+            url: '/FullyAssociativeCacheSimulation/GetCurrentAddressBreakdown',
             success: function (response) {
-                $("#indexValue").text(response.indexBinary);
                 $("#tagValue").text(response.tagBinary);
                 $("#addressRow").addClass('highlight');
 
-                DirectMappedSimulation.index = parseInt(response.indexBinary, 2);
+                //DirectMappedSimulation.index = parseInt(response.indexBinary, 2); //go through all
             }
         });
     },
 
-    updateCache: function () {
-        $.ajax({
-            type: 'GET',
-            url: 'DirectMappedCacheSimulation/UpdateCache',
-            async: false,
-            success: function (response) {
-                $("#valid-" + DirectMappedSimulation.index).text('1');
-                $("#tag-" + DirectMappedSimulation.index).text(response.tags[DirectMappedSimulation.index]);
-                $("#data-" + DirectMappedSimulation.index).text(response.dataBlocks[DirectMappedSimulation.index]);
-
-                $("#memory-" + response.currentMemoryAddress).addClass('highlight');
-                DirectMappedSimulation.currentMemoryAddress = response.currentMemoryAddress;
-
-                $("#tagValue").removeClass('highlight-red');
-                $("#tag-" + DirectMappedSimulation.index).removeClass('highlight-red');
-
-                $("#tag-" + DirectMappedSimulation.index).addClass('highlight-more');
-                $("#data-" + DirectMappedSimulation.index).addClass('highlight-more');
-
-                Simulation.updateButtons();
-            }
-        });
-    },
-
-} 
+}

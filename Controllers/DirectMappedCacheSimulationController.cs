@@ -39,6 +39,11 @@ namespace CacheSimulator.Controllers
             return Json(_applicationService.UpdateCache());
         }
 
+        public void NextInstruction()
+        {
+            _applicationService.NextInstruction();
+        }
+
         public void Reset()
         {
             DirectMappedCacheApplicationService.Reset();

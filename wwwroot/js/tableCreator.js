@@ -1,5 +1,5 @@
 ﻿
-var CacheTableCreator = {
+var CacheTableCreator = { //renaming necesary
     drawDirectMappedCache: function() {
         $("#cacheTableContainer").empty();
 

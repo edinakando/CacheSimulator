@@ -19,6 +19,7 @@ namespace CacheSimulator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<DirectMappedCacheApplicationService, DirectMappedCacheApplicationService>();
+            services.AddScoped<FullyAssociativeCacheApplicationService, FullyAssociativeCacheApplicationService>();
             services.AddMvc(options => options.EnableEndpointRouting = false);
         }
 
