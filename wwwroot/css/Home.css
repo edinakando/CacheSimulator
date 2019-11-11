@@ -1,0 +1,36 @@
+﻿.centered-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    flex-direction: column;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+}
+
+.title {
+    font-size: 5em;
+}
+
+.subtitle {
+    font-size: x-large;
+}
+
+.cache-types-list {
+    padding: 0;
+}
+
+    .cache-types-list li {
+        list-style: none;
+        margin: 0.5em 0 0 0.5em;
+    }
+
+        .cache-types-list li a {
+            color: black;
+            padding: 0.5em;
+            text-decoration: none;
+            font-size: large;
+        }
+
+.list-group-item:hover {
+    background-color: lightgreen;
+}

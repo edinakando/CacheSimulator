@@ -1,0 +1,87 @@
+﻿
+
+<div class="left-menu">
+
+    <table>
+        <tr>
+            <td width="45%" class="menu-option-text">Memory Size: </td>
+            <td><input id="memorySize" class="form-control" value="1024" type="number" /></td>
+        </tr>
+
+        <tr>
+            <td class="menu-option-text">Cache Size: </td>
+            <td><input id="cacheSize" class="form-control"  value="64" type="number" /></td>
+        </tr>
+
+        <tr>
+            <td class="menu-option-text">Data Block Size: </td>
+            <td><input id="dataSize" class="form-control" value="16" type="number" /></td>
+        </tr>
+
+        <tr>
+            <td class="menu-option-text">Instruction set:</td>
+            <td><div contenteditable="true" id="instructionSet" class="form-control"></div></td>
+        </tr>
+
+        <tr>
+            <td class="menu-option-text">Replacement algorithm:</td>
+            <td class="menu-option-text">
+                <div class="option">
+                    <input type="radio" checked="checked" name="replacementAlgorithm" value="0" /> <label>LFU</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="replacementAlgorithm" value="1" /> <label>LRU</label>
+                </div>
+                <div class="option">
+                    <input type="radio" name="replacementAlgorithm" value="2" /> <label>FIFO</label>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="menu-option-text">Write policy:</td>
+            <td class="menu-option-text">
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" checked="checked" name="writePolicy" value="0" /> <label>Write Back</label>
+                    </div>
+
+                    <div class="option">
+                        <input type="radio" name="writePolicy" value="1" /> <label>Write Through</label>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="menu-option-text"></td>
+            <td class="menu-option-text">
+                <div class="options">
+                    <div class="option">
+                        <input type="radio" checked="checked" name="writePolicyAllocate" value="0" /> <label>Write Allocate</label>
+                    </div>
+
+                    <div class="option">
+                        <input type="radio" name="writePolicyAllocate" value="1" /> <label>Write No Allocate</label>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td id="startSimulationButton" class="menu-option-text">
+                <button class="btn btn-success" onclick="DirectMappedSimulation.startSimulation()">Start simulation</button>
+            </td>
+            <td id="nextStepButton" hidden class="menu-option-text">
+                <button class="btn btn-success" onclick="DirectMappedSimulation.nextStep()">Next</button>
+            </td>
+            <td id="nextInstructionButton" hidden class="menu-option-text">
+                <button class="btn btn-success" onclick="DirectMappedSimulation.nextInstruction()">Next Instruction</button>
+            </td>
+            <td id="finishButton" hidden class="menu-option-text">
+                <button class="btn btn-success" onclick="DirectMappedSimulation.finish()">Finish</button>
+            </td>
+        </tr>
+    </table>
+
+</div>

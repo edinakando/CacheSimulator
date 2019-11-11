@@ -1,0 +1,85 @@
+﻿.navbar .navbar-brand img {
+    height: 2.5em;
+    position: fixed;
+    left: 1em;
+    top: 0.2em;
+}
+
+
+.left-menu{
+    margin-left: 1em;
+    height: 80%;
+    max-width: 25em;
+    float: left;
+}
+
+.form-control{
+    width: 14em;
+    display: inline-block;
+    margin-bottom:  0.5em;
+}
+
+.menu-option-text {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+}
+
+.option {
+    margin-right: 0.5em;
+    display: inline-block;
+}
+
+    .option label {
+        font-weight: normal !important;
+        vertical-align: middle
+    }
+
+input[type=radio] {
+    border: 0px;
+    height: 1em;
+    width: 1em;
+    vertical-align: central;
+}
+
+#cacheTableContainer {
+    width: 35%;
+    display: inline-block;
+    float: left;
+    margin-left: 1em;
+}
+
+#memoryTableContainer{
+    max-width: 35%;
+    display: inline-block;
+    margin-left: 2em;
+    margin-bottom: 2em;
+}
+
+#addressBreakdown {
+    margin-left: 27em;
+    margin-bottom: 1em;
+}
+
+.highlight {
+    background: #5BC236;
+}
+
+.highlight-more {
+    background: #008022;
+}
+
+.highlight-red {
+    background: #bb0000;
+}
+
+mark {
+    color: transparent;
+    background-color: #5BC236;
+    display: block;
+}
+
+#instructionSet{
+    height: 12em;
+    overflow-y: auto;
+}
