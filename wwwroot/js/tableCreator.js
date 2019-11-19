@@ -45,10 +45,13 @@ var MemoryTableCreator = {
         var entriesPerColumn = memorySize / MemoryTableCreator.numberOfColumns;
 
         var blockCount = 0;
+        memoryTable += `<tr class=\"gray-highlight\" align=center><td></td><td>0</td><td>1</td><td>2</td><td>3</td>
+                                         <td>4</td><td>5</td><td>6</td><td>7</td>`;
         for (var row = 0; row < entriesPerColumn; row++) {
             memoryTable += "<tr align=center>";
+            memoryTable += "<td class=\"gray-highlight\" >A " + row + "</td>"; 
             for (var column = 0; column < MemoryTableCreator.numberOfColumns; column++) {
-                memoryTable += "<td id=\"memory-" + blockCount + "\">B " + blockCount + "</td>";
+                memoryTable += "<td id=\"memory-" + blockCount + "\">D " + blockCount + "</td>";
                 blockCount++;
             }
             memoryTable += "</tr>";

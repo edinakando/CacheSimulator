@@ -10,11 +10,13 @@
     <table border="1" width="40%">
         <tr align="center">
             <td>Tag</td>
-            <td width="40%">Index</td>
+            <td width="25%">Index</td>
+            <td width="25%">Offset</td>
         </tr>
         <tr id="addressRow" align="center">
             <td><h id="tagValue"></h></td>
             <td><h id="indexValue"></h></td>
+            <td><h id="offsetValue"></h></td>
         </tr>
     </table>
 </div>
@@ -39,21 +41,6 @@
 
 
 <div id="memoryTableContainer">
-    <table border="1">
-        @{
-            var blockCount = 0;
-            for (var row = 0; row < 128; row++)
-            {
-                <tr align="center">
-                    @for (var column = 0; column < 8; column++)
-                    {
-                        <td id=@("memory-"+blockCount)>B @blockCount</td>
-                        blockCount++;
-                    }
-                </tr>
-            }
-        }
-
-    </table>
+   <partial name="_Memory" />
 </div>
 

@@ -1,18 +1,22 @@
 ﻿var FullyAssociativeSimulation = {
     currentStep: 0,
+    indexCount: 0,
+    validBlocks: [],
 
     startSimulation: function (simulationParameters) {
-        //CacheTableCreator.drawDirectMappedCache();  
+        CacheTableCreator.drawDirectMappedCache();  
 
         $.ajax({
             type: "POST",
             async: false,
             url: "/FullyAssociativeCacheSimulation/FullyAssociativeCache",
             data: { simulationParameters: simulationParameters },
-            success: function () {
+            success: function (response) {
+                FullyAssociativeSimulation.indexCount = response;
                 FullyAssociativeSimulation.nextStep();
             },
-            error: function () {
+            error: function (response) {
+                console.log(response);
             }
         });
     },
@@ -25,61 +29,71 @@
             this.addressBreakdown();
         }
         else if (this.currentStep == 2) {
-            $.notify("Checking corresponding index", "success");
-            $("#cacheRow-" + this.index).addClass('highlight');
+            $.notify("Finding all blocks where the valid bit is 1", "success");
+
+            for (var index = 0; index < this.indexCount; index++) {
+                if ($("#valid-" + index).text() == 1) {
+                    $("#cacheRow-" + index).addClass('highlight');
+                    this.validBlocks.push(index);
+                }
+            }
         }
         else if (this.currentStep == 3) {
-            $.notify("Checking valid bit", "success");
-            $("#valid-" + this.index).addClass('highlight-more');
-        }
-        else if (this.currentStep == 4) {
-            var valid = $("#valid-" + this.index).text();
-            if (valid == 0) {
-                $.notify("Valid bit is 0 => Cache Miss", "error");
-                $("#valid-" + this.index).addClass('highlight-red');
-            }
-            else {
-                $.notify("Valid bit is 1 => Compare the Tags", "success");
-
-                $("#valid-" + this.index).removeClass('highlight-more');
-                $("#tagValue").addClass('highlight-more');
-                $("#tag-" + this.index).addClass('highlight-more');
-
-                this.isValid = 1;
+            if (this.validBlocks.length == 0) {
+                $.notify("No valid blocks found => Cache MISS", "error");
+                for (var index = 0; index < FullyAssociativeSimulation.indexCount; index++) {
+                    $("#valid-" + index).addClass('highlight-red');
+                }
             }
         }
-        else if (this.currentStep == 5 && this.isValid == 0) {
-            $.notify("Updating cache", "success");
-            $("#valid-" + this.index).removeClass('highlight-red');
-            $("#valid-" + this.index).removeClass('highlight-more');
+        //else if (this.currentStep == 4) {
+        //    var valid = $("#valid-" + this.index).text();
+        //    if (valid == 0) {
+        //        $.notify("Valid bit is 0 => Cache Miss", "error");
+        //        $("#valid-" + this.index).addClass('highlight-red');
+        //    }
+        //    else {
+        //        $.notify("Valid bit is 1 => Compare the Tags", "success");
 
-            DirectMappedSimulation.updateCache();
-        }
-        else if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
-            var currentMemoryTag = $("#tagValue").text();
-            var currentCacheTag = $("#tag-" + this.index).text();
+        //        $("#valid-" + this.index).removeClass('highlight-more');
+        //        $("#tagValue").addClass('highlight-more');
+        //        $("#tag-" + this.index).addClass('highlight-more');
 
-            if (currentMemoryTag == currentCacheTag) {
-                $.notify("Tags are equal => Cache HIT", "success");
-                this.isHit = 1;
-            }
-            else {
-                $.notify("Tags are different => Cache MISS", "error");
-                $("#tagValue").addClass('highlight-red');
-                $("#tag-" + this.index).addClass('highlight-red');
-            }
+        //        this.isValid = 1;
+        //    }
+        //}
+        //else if (this.currentStep == 5 && this.isValid == 0) {
+        //    $.notify("Updating cache", "success");
+        //    $("#valid-" + this.index).removeClass('highlight-red');
+        //    $("#valid-" + this.index).removeClass('highlight-more');
 
-            this.isValid = 0;
-        }
-        else if (this.currentStep == 6 && this.isHit == 0) {
-            $.notify("Updating cache", "success");
+        //    DirectMappedSimulation.updateCache();
+        //}
+        //else if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
+        //    var currentMemoryTag = $("#tagValue").text();
+        //    var currentCacheTag = $("#tag-" + this.index).text();
 
-            DirectMappedSimulation.updateCache();
-        }
-        else {
-            this.isHit = 0;
-            DirectMappedSimulation.updateButtons();
-        }
+        //    if (currentMemoryTag == currentCacheTag) {
+        //        $.notify("Tags are equal => Cache HIT", "success");
+        //        this.isHit = 1;
+        //    }
+        //    else {
+        //        $.notify("Tags are different => Cache MISS", "error");
+        //        $("#tagValue").addClass('highlight-red');
+        //        $("#tag-" + this.index).addClass('highlight-red');
+        //    }
+
+        //    this.isValid = 0;
+        //}
+        //else if (this.currentStep == 6 && this.isHit == 0) {
+        //    $.notify("Updating cache", "success");
+
+        //    DirectMappedSimulation.updateCache();
+        //}
+        //else {
+        //    this.isHit = 0;
+        //    DirectMappedSimulation.updateButtons();
+        //}
     },
 
     addressBreakdown: function () {

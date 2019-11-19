@@ -36,21 +36,5 @@
 
 
 <div id="memoryTableContainer">
-    <table border="1">
-        @{
-            var blockCount = 0;
-            for (var row = 0; row < 128; row++)
-            {
-                <tr align="center">
-                    @for (var column = 0; column < 8; column++)
-                    {
-                        <td id=@("memory-"+blockCount)>B @blockCount</td>
-                        blockCount++;
-                    }
-                </tr>
-            }
-        }
-
-    </table>
+    <partial name="_Memory" />
 </div>
-

@@ -83,3 +83,7 @@ mark {
     height: 12em;
     overflow-y: auto;
 }
+
+.gray-highlight{
+    background-color: lightgray;
+}

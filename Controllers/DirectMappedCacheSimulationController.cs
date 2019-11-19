@@ -47,7 +47,6 @@ namespace CacheSimulator.Controllers
         public void Reset()
         {
             DirectMappedCacheApplicationService.Reset();
-            var a = 5;
         }
     }
 }

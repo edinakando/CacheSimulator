@@ -7,7 +7,7 @@
     currentMemoryAddress: 0,
 
     startSimulation: function (simulationParameters) {
-        CacheTableCreator.drawDirectMappedCache();
+       // CacheTableCreator.drawDirectMappedCache();
 
         $.ajax({
             type: "POST",
@@ -99,8 +99,11 @@
         $("#valid-" + DirectMappedSimulation.index).removeAttr('class');
         $("#tag-" + DirectMappedSimulation.index).removeAttr('class');
         $("#data-" + DirectMappedSimulation.index).removeAttr('class');
-        $("#memory-" + DirectMappedSimulation.currentMemoryAddress).removeClass('highlight');
         $("#tagValue").removeAttr('class');
+
+        for (var i = DirectMappedSimulation.currentMemoryAddress; i < DirectMappedSimulation.currentMemoryAddress + 4; i++) {
+            $("#memory-" + i).removeClass('highlight');
+        }
 
         Simulation.highlightCurrentInstruction(this.currentInstruction);
 
@@ -127,6 +130,7 @@
             success: function (response) {
                 $("#indexValue").text(response.indexBinary);
                 $("#tagValue").text(response.tagBinary);
+                $("#offsetValue").text(response.offsetBinary);
                 $("#addressRow").addClass('highlight');
 
                 DirectMappedSimulation.index = parseInt(response.indexBinary, 2);
@@ -142,10 +146,13 @@
             success: function (response) {
                 $("#valid-" + DirectMappedSimulation.index).text('1');
                 $("#tag-" + DirectMappedSimulation.index).text(response.tags[DirectMappedSimulation.index]);
-                $("#data-" + DirectMappedSimulation.index).text(response.dataBlocks[DirectMappedSimulation.index]);
+                $("#data-" + DirectMappedSimulation.index).text(response.cacheLines[DirectMappedSimulation.index].data.toString());
 
-                $("#memory-" + response.currentMemoryAddress).addClass('highlight');
-                DirectMappedSimulation.currentMemoryAddress = response.currentMemoryAddress;
+                DirectMappedSimulation.currentMemoryAddress = response.currentMemoryAddress * 4;
+
+                for (var i = DirectMappedSimulation.currentMemoryAddress; i < DirectMappedSimulation.currentMemoryAddress + 4; i++) {
+                    $("#memory-" + i).addClass('highlight');
+                }
 
                 $("#tagValue").removeClass('highlight-red');
                 $("#tag-" + DirectMappedSimulation.index).removeClass('highlight-red');

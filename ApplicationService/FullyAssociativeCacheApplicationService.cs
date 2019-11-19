@@ -32,5 +32,10 @@ namespace CacheSimulator.ApplicationService
             };
         }
 
+        public Int32 GetIndexCount()
+        {
+            return IndexCount;
+        }
+
     }
 }

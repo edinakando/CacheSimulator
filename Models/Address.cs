@@ -7,7 +7,9 @@ namespace CacheSimulator.Models
 {
     public class Address
     {
-        public String IndexBinary{ get; set; }
+        //eventual view model
         public String TagBinary { get; set; }
+        public String IndexBinary { get; set; }
+        public String OffsetBinary { get; set; }
     }
 }

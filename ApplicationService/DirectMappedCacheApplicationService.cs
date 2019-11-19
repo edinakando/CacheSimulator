@@ -27,12 +27,12 @@ namespace CacheSimulator.ApplicationService
         public Address GetCurrentAddressBreakdown()
         {
             var addressInBits = GetCurrentAddressInBits();
-            var tagSize = _GetTagSizeInBits();
 
             return new Address
             {
-                TagBinary = addressInBits?.Substring(0, tagSize),
-                IndexBinary = addressInBits?.Substring(tagSize, _GetIndexSizeInBits())
+                TagBinary = _GetCurrentTag(),
+                IndexBinary = addressInBits?.Substring(_GetTagSizeInBits(), _GetIndexSizeInBits()),
+                OffsetBinary = _GetCurrentOffset()
             };
         }
 
@@ -40,10 +40,12 @@ namespace CacheSimulator.ApplicationService
         {
             Int32 currentIndex = _GetCurrentIndex();
             Int32 address = SimulationParameters.Operations[CurrentOperationIndex].Address;
+            Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
+            Int32 blockIndex = address / cacheLineSizeInMemoryBlocks;
 
             CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
-            CacheViewModel.DataBlocks[currentIndex] = Memory[address];
-            CacheViewModel.CurrentMemoryAddress = address;
+            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
+            CacheViewModel.CurrentMemoryAddress = blockIndex;
 
             return CacheViewModel;
         }
@@ -53,17 +55,24 @@ namespace CacheSimulator.ApplicationService
             CurrentOperationIndex++;
         }
 
+        private String _GetCurrentTag()
+        {
+            return GetCurrentAddressInBits().Substring(0, _GetTagSizeInBits());
+        }
+
         private Int32 _GetCurrentIndex()
         {
             var addressInBits = GetCurrentAddressInBits();  
             return Convert.ToInt32(addressInBits.Substring(_GetTagSizeInBits(), _GetIndexSizeInBits()), 2);
         }
 
-        private String _GetCurrentTag()
+        private String _GetCurrentOffset()
         {
-            return GetCurrentAddressInBits().Substring(0, _GetTagSizeInBits());
-        }
+            var tagSize = _GetTagSizeInBits();
+            var indexSize = _GetIndexSizeInBits();
 
+            return GetCurrentAddressInBits().Substring(tagSize + indexSize, _GetOffsetSizeInBits());
+        }
         private Int32 _GetIndexSizeInBits()
         {
             return Convert.ToInt32(Math.Log2(IndexCount));
@@ -71,7 +80,12 @@ namespace CacheSimulator.ApplicationService
 
         private Int32 _GetTagSizeInBits()
         {
-            return AddressSize - _GetIndexSizeInBits();
+            return AddressSize - _GetIndexSizeInBits() - _GetOffsetSizeInBits();
+        }
+
+        private Int32 _GetOffsetSizeInBits()
+        {
+            return Convert.ToInt32(Math.Log2(SimulationParameters.DataSize / MemoryDataSize));
         }
     }
 }

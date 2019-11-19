@@ -23,14 +23,16 @@ namespace CacheSimulator.Controllers
         }
 
         [HttpPost]
-        public void FullyAssociativeCache(SimulationParameters simulationParameters)
+        public IActionResult FullyAssociativeCache(SimulationParameters simulationParameters)
         {
             FullyAssociativeCacheApplicationService.SetupSimulation(simulationParameters);
+            return Json(_applicationService.GetIndexCount());
         }
 
         public IActionResult GetCurrentAddressBreakdown()
         {
             return Json(_applicationService.GetCurrentAddressBreakdown());
         }
+
     }
 }

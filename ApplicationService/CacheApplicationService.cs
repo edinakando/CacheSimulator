@@ -9,17 +9,31 @@ namespace CacheSimulator.ApplicationService
     {
         protected static SimulationParameters SimulationParameters;
         protected static CacheViewModel CacheViewModel;
-        protected static IList<String> Memory;
+        protected static IList<BlockModel> Memory;
         protected static Int32 CurrentOperationIndex = 0;
         protected static Int32 IndexCount;
         protected static Int32 AddressSize = 12;
+        protected static Int32 MemoryDataSize = 8;
 
         protected static void SetMemory()
         {
-            Memory = new List<String>();
-            for (var i = 0; i < SimulationParameters.MemorySize; i++)
+            Memory = new List<BlockModel>();
+            Int32 offsetSize = SimulationParameters.CacheSize / SimulationParameters.DataSize;
+            Int32 blockNumbers = SimulationParameters.MemorySize / offsetSize;
+            Int32 dataBlockNumber = 0;
+            for (var blockNumber = 0; blockNumber < blockNumbers; blockNumber++)
             {
-                Memory.Add("B " + i);
+                var currentBlockList = new List<String>();
+                for(var dataBlock = 0; dataBlock < offsetSize; dataBlock++)
+                {
+                    currentBlockList.Add("D" + dataBlockNumber);
+                    dataBlockNumber++;
+                }
+                Memory.Add(new BlockModel
+                {
+                    BlockNumber = blockNumber, 
+                    Data = currentBlockList 
+                });
             }
         }
 
