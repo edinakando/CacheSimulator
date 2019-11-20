@@ -48,5 +48,20 @@ namespace CacheSimulator.ApplicationService
            
             return Convert.ToString(currentOperation.Address, 2).PadLeft(AddressSize, '0');
         }
+        protected Int32 GetOffsetSizeInBits()
+        {
+            return Convert.ToInt32(Math.Log2(SimulationParameters.DataSize / MemoryDataSize));
+        }
+
+        public void NextInstruction()
+        {
+            CurrentOperationIndex++;
+        }
+
+        public static void Reset()
+        {
+            SimulationParameters = null;
+            CurrentOperationIndex = 0;
+        }
     }
 }

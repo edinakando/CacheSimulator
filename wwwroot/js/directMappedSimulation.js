@@ -101,7 +101,7 @@
         $("#data-" + DirectMappedSimulation.index).removeAttr('class');
         $("#tagValue").removeAttr('class');
 
-        for (var i = DirectMappedSimulation.currentMemoryAddress; i < DirectMappedSimulation.currentMemoryAddress + 4; i++) {
+        for (var i = Simulation.currentMemoryAddress; i < Simulation.currentMemoryAddress + Simulation.cacheLineSize; i++) {
             $("#memory-" + i).removeClass('highlight');
         }
 
@@ -148,9 +148,9 @@
                 $("#tag-" + DirectMappedSimulation.index).text(response.tags[DirectMappedSimulation.index]);
                 $("#data-" + DirectMappedSimulation.index).text(response.cacheLines[DirectMappedSimulation.index].data.toString());
 
-                DirectMappedSimulation.currentMemoryAddress = response.currentMemoryAddress * 4;
+                Simulation.currentMemoryAddress = response.currentMemoryAddress * Simulation.cacheLineSize;
 
-                for (var i = DirectMappedSimulation.currentMemoryAddress; i < DirectMappedSimulation.currentMemoryAddress + 4; i++) {
+                for (var i = Simulation.currentMemoryAddress; i < Simulation.currentMemoryAddress + Simulation.cacheLineSize; i++) {
                     $("#memory-" + i).addClass('highlight');
                 }
 

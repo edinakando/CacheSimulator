@@ -73,6 +73,10 @@ input[type=radio] {
     background: #bb0000;
 }
 
+.highlight-hit {
+    background: yellow;
+}
+
 mark {
     color: transparent;
     background-color: #5BC236;
@@ -87,3 +91,4 @@ mark {
 .gray-highlight{
     background-color: lightgray;
 }
+

@@ -3,6 +3,8 @@
     instructionCount: 0,
     isDirectMapedCache: 0,
     isFullyAssociativeCache: 0,
+    cacheLineSize: 0,
+    currentMemoryAddress: 0,
 
     startSimulation: function () {
         $("#startSimulationButton").hide();
@@ -19,6 +21,8 @@
         var replacementAlgorithm = $("input[type='radio'][name='replacementAlgorithm']:checked").val();
         var writePolicy = $("input[type='radio'][name='writePolicy']:checked").val();
         var writePolicyAllocate = $("input[type='radio'][name='writePolicyAllocate']:checked").val();
+
+        Simulation.cacheLineSize = cacheSize / dataSize;
 
         var operations = [];
         for (var line = 0; line < this.instructionLines.length; line++) {
