@@ -1,8 +1,20 @@
 ﻿
-var CacheTableCreator = { //renaming necesary
-    drawDirectMappedCache: function() {
-        $("#cacheTableContainer").empty();
+var TableCreator = {
+    numberOfColumns: 8,
 
+    drawCacheAndMemory: function (indexCount, setCount) {
+        var cacheTable = "";
+        for (var set = 0; set < setCount; set++) {
+            cacheTable += this.drawCache(indexCount)
+        }
+
+        $("#cacheTableContainer").empty();
+        $("#cacheTableContainer").html(cacheTable);
+
+        this.drawMemory();
+    },
+
+    drawCache: function (indexCount) {
         var cacheTable = `<table border=1 width=100%>
                                         <tr align=center>
                                             <td width=15%>Index</td>
@@ -10,11 +22,6 @@ var CacheTableCreator = { //renaming necesary
                                             <td>Tag</td>
                                             <td>Data</td>
                                         </tr>`;
-
-        var cacheSize = $("#cacheSize").val();
-        var dataBlockSize = $("#dataSize").val();
-
-        var indexCount = cacheSize / dataBlockSize;
 
         for (var index = 0; index < indexCount; index++) {
             cacheTable += "<tr id=\"cacheRow-" + index + "\" align=center>" +
@@ -24,17 +31,10 @@ var CacheTableCreator = { //renaming necesary
                 "<td id=\"data-" + index + "\"></td></tr>";
         }
 
-        cacheTable += "</table>";
+        cacheTable += "</table><br/><br/>";
 
-        $("#cacheTableContainer").html(cacheTable);
-
-        MemoryTableCreator.drawMemory();
-    }
-}
-
-
-var MemoryTableCreator = {
-    numberOfColumns: 8,
+        return cacheTable;
+    },
 
     drawMemory: function () {
         $("#memoryTableContainer").empty();
@@ -42,15 +42,15 @@ var MemoryTableCreator = {
 
         var memoryTable = "<table border=1>";
 
-        var entriesPerColumn = memorySize / MemoryTableCreator.numberOfColumns;
+        var entriesPerColumn = memorySize / this.numberOfColumns;
 
         var blockCount = 0;
         memoryTable += `<tr class=\"gray-highlight\" align=center><td></td><td>0</td><td>1</td><td>2</td><td>3</td>
-                                         <td>4</td><td>5</td><td>6</td><td>7</td>`;
+                                        <td>4</td><td>5</td><td>6</td><td>7</td>`;
         for (var row = 0; row < entriesPerColumn; row++) {
             memoryTable += "<tr align=center>";
-            memoryTable += "<td class=\"gray-highlight\" >A " + row + "</td>"; 
-            for (var column = 0; column < MemoryTableCreator.numberOfColumns; column++) {
+            memoryTable += "<td class=\"gray-highlight\" >A " + row + "</td>";
+            for (var column = 0; column < this.numberOfColumns; column++) {
                 memoryTable += "<td id=\"memory-" + blockCount + "\">D " + blockCount + "</td>";
                 blockCount++;
             }
@@ -62,3 +62,7 @@ var MemoryTableCreator = {
         $("#memoryTableContainer").html(memoryTable);
     }
 }
+
+
+
+

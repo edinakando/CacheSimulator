@@ -63,6 +63,7 @@ namespace CacheSimulator.ApplicationService
                 if(CacheViewModel.CacheLines[cacheLine] == null)
                 {
                     _PlaceDataAtIndex(cacheLine);
+                    Fifo.Add(cacheLine);
                     CacheViewModel.CacheUpdateTypeMessage = "Copying data to an unused cache line.";
                     isFull = false;
                     break;
@@ -130,8 +131,7 @@ namespace CacheSimulator.ApplicationService
         public void UpdateStatistics(Int32 currentIndex)
         {
             CacheLineFrequencies[currentIndex]++;
-            Fifo.Add(currentIndex);
-
+            
             Int32 mostRecentTime = -1;
             for(var cacheLine = 0; cacheLine < IndexCount; cacheLine++)
             {
@@ -140,7 +140,7 @@ namespace CacheSimulator.ApplicationService
                     mostRecentTime = CacheLineLastUsageTimes[cacheLine];
                 }
             }
-            CacheLineLastUsageTimes[currentIndex] = mostRecentTime++;
+            CacheLineLastUsageTimes[currentIndex] = ++mostRecentTime;
         }
     }
 }

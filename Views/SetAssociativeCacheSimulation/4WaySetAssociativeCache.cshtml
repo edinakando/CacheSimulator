@@ -1,20 +1,19 @@
-﻿@{
-    ViewBag.Title = "Direct Mapped Cache";
+﻿
+@{
+    ViewBag.Title = "4 Way Set Associative Cache";
 }
 
 <partial name="_NavigationBar">
 <partial name="_SimulationInputsSideMenu">
 
 <div id="addressBreakdown">
-    <table border="1" width="40%">
+    <table border="1" width="30%">
         <tr align="center">
             <td>Tag</td>
-            <td width="25%">Index</td>
-            <td width="25%">Offset</td>
+            <td width="30%">Offset</td>
         </tr>
         <tr id="addressRow" align="center">
             <td><h id="tagValue"></h></td>
-            <td><h id="indexValue"></h></td>
             <td><h id="offsetValue"></h></td>
         </tr>
     </table>
@@ -23,4 +22,4 @@
 <div id="cacheTableContainer"></div>
 <div id="memoryTableContainer"></div>
 
-<script>TableCreator.drawCacheAndMemory(4, 1)</script>
+<script>TableCreator.drawCacheAndMemory(2, 4)</script>

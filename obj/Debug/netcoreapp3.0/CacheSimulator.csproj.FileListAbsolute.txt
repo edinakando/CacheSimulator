@@ -131,4 +131,5 @@ C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp
 C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp3.0\Razor\Views\DirectMappedCacheSimulation\Index.cshtml.g.cs
 C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp3.0\CacheSimulator.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp3.0\Razor\Views\FullyAssociativeCacheSimulation\Index.cshtml.g.cs
-C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp3.0\Razor\Views\Shared\_Memory.cshtml.g.cs
+C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp3.0\Razor\Views\SetAssociativeCacheSimulation\2WaySetAssociativeCache.cshtml.g.cs
+C:\Users\edina\42\SCS\proiect\CacheSimulator\CacheSimulator\obj\Debug\netcoreapp3.0\Razor\Views\SetAssociativeCacheSimulation\4WaySetAssociativeCache.cshtml.g.cs

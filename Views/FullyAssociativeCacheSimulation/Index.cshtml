@@ -19,24 +19,7 @@
 </div>
 
 
-<div id="cacheTableContainer">
-    @*default cache*@
-    <table border=1 width=100%>
-        <tr align=center>
-            <td width=15%>Index</td>
-            <td width=15%>Valid</td>
-            <td>Tag</td>
-            <td>Data</td>
-        </tr>
+<div id="cacheTableContainer"></div>
+<div id="memoryTableContainer"></div>
 
-        <tr id="cacheRow-0" align=center><td>0</td><td id="valid-0">0</td><td id="tag-0"></td><td id="data-0"></td></tr>
-        <tr id="cacheRow-1" align=center><td>1</td><td id="valid-1">0</td><td id="tag-1"></td><td id="data-1"></td></tr>
-        <tr id="cacheRow-2" align=center><td>2</td><td id="valid-2">0</td><td id="tag-2"></td><td id="data-2"></td></tr>
-        <tr id="cacheRow-3" align=center><td>3</td><td id="valid-3">0</td><td id="tag-3"></td><td id="data-3"></td></tr>
-    </table>
-</div>
-
-
-<div id="memoryTableContainer">
-    <partial name="_Memory" />
-</div>
+<script>TableCreator.drawCacheAndMemory(4, 1)</script>

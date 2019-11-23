@@ -20,6 +20,7 @@ namespace CacheSimulator
         {
             services.AddScoped<DirectMappedCacheApplicationService, DirectMappedCacheApplicationService>();
             services.AddScoped<FullyAssociativeCacheApplicationService, FullyAssociativeCacheApplicationService>();
+            services.AddScoped<SetAssociativeCacheApplicationService, SetAssociativeCacheApplicationService>();
             services.AddMvc(options => options.EnableEndpointRouting = false);
         }
 
@@ -31,14 +32,7 @@ namespace CacheSimulator
                 app.UseDeveloperExceptionPage();
             }
 
-
             app.UseStaticFiles();
-
-            //app.UseMvc(routes =>
-            //           {
-            //               routes.MapRoute(name: "default",
-            //                                template: "{controller = Home}/{ action = Index }/{ id ?}");
-            //           });
             app.UseMvcWithDefaultRoute();
         }
     }

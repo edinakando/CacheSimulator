@@ -3,6 +3,7 @@
     instructionCount: 0,
     isDirectMapedCache: 0,
     isFullyAssociativeCache: 0,
+    isSetAssociativeCache: 0,
     cacheLineSize: 0,
     currentMemoryAddress: 0,
 
@@ -58,6 +59,10 @@
             this.isFullyAssociativeCache = 1
             FullyAssociativeSimulation.startSimulation(simulationParameters);
         }
+        else if (windowLocation.includes("setassociative")) {
+            this.isSetAssociativeCache = 1
+            SetAssociativeSimulation.startSimulation(simulationParameters);
+        }
     },
 
     highlightCurrentInstruction: function (currentInstruction) {
@@ -94,6 +99,9 @@
         else if (this.isFullyAssociativeCache == 1) {
             FullyAssociativeSimulation.nextStep();
         }
+        else if (this.isFullyAssociativeCache == 1) {
+            SetAssociativeSimulation.nextStep();
+        }
     },
 
     nextInstruction: function () {
@@ -103,6 +111,9 @@
         else if (this.isFullyAssociativeCache == 1) {
             FullyAssociativeSimulation.nextInstruction();
         }
+        else if (this.isSetAssociativeCache == 1) {
+            SetAssociativeSimulation.nextInstruction();
+        }
     },
 
     finish: function () {
@@ -111,6 +122,9 @@
         }
         else if (this.isFullyAssociativeCache == 1) {
             FullyAssociativeSimulation.finish();
+        }
+        else if (this.isSetAssociativeCache == 1) {
+            SetAssociativeSimulation.finish();
         }
     }
 }

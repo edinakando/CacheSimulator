@@ -8,8 +8,8 @@
         <ul class="nav navbar-nav navbar-right">
             <li><a class="navbar-brand" asp-controller="DirectMappedCacheSimulation" asp-action="Index">Direct Mapped</a></li>
             <li><a class="navbar-brand" asp-controller="FullyAssociativeCacheSimulation" asp-action="Index">Fully Associative</a></li>
-            <li><a class="navbar-brand" href="javascript:drawDefaultDirectMappedCache()">2-Way Set Associative</a></li>
-            <li><a class="navbar-brand" href="javascript:drawDefaultDirectMappedCache()">4-Way Set Associative</a></li>
+            <li><a class="navbar-brand" asp-controller="SetAssociativeCacheSimulation" asp-action="Index" asp-route-setCount="2">2-Way Set Associative</a></li>
+            <li><a class="navbar-brand" asp-controller="SetAssociativeCacheSimulation" asp-action="Index" asp-route-setCount="4">4-Way Set Associative</a></li>
         </ul>
     </div>
 </nav>

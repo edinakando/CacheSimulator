@@ -9,8 +9,6 @@
     isHit: 0,
 
     startSimulation: function (simulationParameters) {
-        CacheTableCreator.drawDirectMappedCache();
-
         $.ajax({
             type: "POST",
             async: false,
@@ -18,12 +16,14 @@
             data: { simulationParameters: simulationParameters },
             success: function (response) {
                 FullyAssociativeSimulation.indexCount = response;
-                FullyAssociativeSimulation.nextStep();
             },
             error: function (response) {
                 console.log(response);
             }
         });
+
+        TableCreator.drawCacheAndMemory(FullyAssociativeSimulation.indexCount, 1);
+        FullyAssociativeSimulation.nextStep();
     },
 
     nextStep: function () {

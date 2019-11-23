@@ -7,7 +7,7 @@
     currentMemoryAddress: 0,
 
     startSimulation: function (simulationParameters) {
-       // CacheTableCreator.drawDirectMappedCache();
+        TableCreator.drawCacheAndMemory(simulationParameters.CacheSize / simulationParameters.DataSize, 1);
 
         $.ajax({
             type: "POST",
