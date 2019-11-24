@@ -5,7 +5,7 @@ var TableCreator = {
     drawCacheAndMemory: function (indexCount, setCount) {
         var cacheTable = "";
         for (var set = 0; set < setCount; set++) {
-            cacheTable += this.drawCache(indexCount)
+            cacheTable += this.drawCache(indexCount, set)
         }
 
         $("#cacheTableContainer").empty();
@@ -14,7 +14,7 @@ var TableCreator = {
         this.drawMemory();
     },
 
-    drawCache: function (indexCount) {
+    drawCache: function (indexCount, setCount) {
         var cacheTable = `<table border=1 width=100%>
                                         <tr align=center>
                                             <td width=15%>Index</td>
@@ -24,14 +24,14 @@ var TableCreator = {
                                         </tr>`;
 
         for (var index = 0; index < indexCount; index++) {
-            cacheTable += "<tr id=\"cacheRow-" + index + "\" align=center>" +
+            cacheTable += "<tr id=\"set-" + setCount + "-cacheRow-" + index + "\" align=center>" +
                 "<td>" + index + "</td>" +
-                "<td id=\"valid-" + index + "\">0</td>" +
-                "<td id=\"tag-" + index + "\"></td>" +
-                "<td id=\"data-" + index + "\"></td></tr>";
+                "<td id=\"set-" + setCount + "-valid-" + index + "\">0</td>" +
+                "<td id=\"set-" + setCount + "-tag-" + index + "\"></td>" +
+                "<td id=\"set-" + setCount + "-data-" + index + "\"></td></tr>";
         }
 
-        cacheTable += "</table><br/><br/>";
+        cacheTable += "</table><br/>";
 
         return cacheTable;
     },

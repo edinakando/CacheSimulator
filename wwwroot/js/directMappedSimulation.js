@@ -31,22 +31,22 @@
         }
         else if (this.currentStep == 2) {
             $.notify("Checking corresponding index", "success");
-            $("#cacheRow-" + this.index).addClass('highlight');
+            $("#set-0-cacheRow-" + this.index).addClass('highlight');
         }
         else if (this.currentStep == 3) {
             $.notify("Checking valid bit", "success");
-            $("#valid-" + this.index).addClass('highlight-more');
+            $("#set-0-valid-" + this.index).addClass('highlight-more');
         }
         else if (this.currentStep == 4) {
-            var valid = $("#valid-" + this.index).text();
+            var valid = $("#set-0-valid-" + this.index).text();
             if (valid == 0) {
                 $.notify("Valid bit is 0 => Cache Miss", "error");
-                $("#valid-" + this.index).addClass('highlight-red');
+                $("#set-0-valid-" + this.index).addClass('highlight-red');
             }
             else {
                 $.notify("Valid bit is 1 => Compare the Tags", "success");
 
-                $("#valid-" + this.index).removeClass('highlight-more');
+                $("#set-0-valid-" + this.index).removeClass('highlight-more');
                 $("#tagValue").addClass('highlight-more');
                 $("#tag-" + this.index).addClass('highlight-more');
 
@@ -55,14 +55,14 @@
         }
         else if (this.currentStep == 5 && this.isValid == 0) {
             $.notify("Updating cache", "success");
-            $("#valid-" + this.index).removeClass('highlight-red');
-            $("#valid-" + this.index).removeClass('highlight-more');
+            $("#set-0-valid-" + this.index).removeClass('highlight-red');
+            $("#set-0-valid-" + this.index).removeClass('highlight-more');
 
             DirectMappedSimulation.updateCache();
         }
         else if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
             var currentMemoryTag = $("#tagValue").text();
-            var currentCacheTag = $("#tag-" + this.index).text();
+            var currentCacheTag = $("#set-0-tag-" + this.index).text();
 
             if (currentMemoryTag == currentCacheTag) {
                 $.notify("Tags are equal => Cache HIT", "success");
@@ -71,7 +71,7 @@
             else {
                 $.notify("Tags are different => Cache MISS", "error");
                 $("#tagValue").addClass('highlight-red');
-                $("#tag-" + this.index).addClass('highlight-red');
+                $("#set-0-tag-" + this.index).addClass('highlight-red');
             }
 
             this.isValid = 0;
@@ -95,10 +95,10 @@
         $("#nextInstructionButton").attr("hidden", true);
 
         $("#addressRow").removeAttr('class');
-        $("#cacheRow-" + this.index).removeAttr('class');
-        $("#valid-" + DirectMappedSimulation.index).removeAttr('class');
-        $("#tag-" + DirectMappedSimulation.index).removeAttr('class');
-        $("#data-" + DirectMappedSimulation.index).removeAttr('class');
+        $("#set-0-cacheRow-" + this.index).removeAttr('class');
+        $("#set-0-valid-" + DirectMappedSimulation.index).removeAttr('class');
+        $("#set-0-tag-" + DirectMappedSimulation.index).removeAttr('class');
+        $("#set-0-data-" + DirectMappedSimulation.index).removeAttr('class');
         $("#tagValue").removeAttr('class');
 
         for (var i = Simulation.currentMemoryAddress; i < Simulation.currentMemoryAddress + Simulation.cacheLineSize; i++) {
@@ -144,9 +144,9 @@
             url: 'DirectMappedCacheSimulation/UpdateCache',
             async: false,
             success: function (response) {
-                $("#valid-" + DirectMappedSimulation.index).text('1');
-                $("#tag-" + DirectMappedSimulation.index).text(response.tags[DirectMappedSimulation.index]);
-                $("#data-" + DirectMappedSimulation.index).text(response.cacheLines[DirectMappedSimulation.index].data.toString());
+                $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
+                $("#set-0-tag-" + DirectMappedSimulation.index).text(response.tags[DirectMappedSimulation.index]);
+                $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheLines[DirectMappedSimulation.index].data.toString());
 
                 Simulation.currentMemoryAddress = response.currentMemoryAddress * Simulation.cacheLineSize;
 
@@ -155,10 +155,10 @@
                 }
 
                 $("#tagValue").removeClass('highlight-red');
-                $("#tag-" + DirectMappedSimulation.index).removeClass('highlight-red');
+                $("#set-0-tag-" + DirectMappedSimulation.index).removeClass('highlight-red');
 
-                $("#tag-" + DirectMappedSimulation.index).addClass('highlight-more');
-                $("#data-" + DirectMappedSimulation.index).addClass('highlight-more');
+                $("#set-0-tag-" + DirectMappedSimulation.index).addClass('highlight-more');
+                $("#set-0-data-" + DirectMappedSimulation.index).addClass('highlight-more');
 
                 Simulation.updateButtons();
             }

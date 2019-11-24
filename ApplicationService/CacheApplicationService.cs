@@ -63,5 +63,11 @@ namespace CacheSimulator.ApplicationService
             SimulationParameters = null;
             CurrentOperationIndex = 0;
         }
+
+        public Int32 GetIndexCount()
+        {
+            return IndexCount;
+        }
+
     }
 }

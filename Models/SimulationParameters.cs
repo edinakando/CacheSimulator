@@ -10,6 +10,7 @@ namespace CacheSimulator.Models
         public Int32 CacheSize { get; set; }
         public Int32 MemorySize { get; set; }
         public Int32 DataSize { get; set; }
+        public Int32 SetCount { get; set; }
         public ReplacementAlgorithm ReplacementAlgorithm { get; set; }
         public WritePolicy WritePolicy { get; set; }
         public WritePolicyAllocate WritePolicyAllocate  { get; set; }

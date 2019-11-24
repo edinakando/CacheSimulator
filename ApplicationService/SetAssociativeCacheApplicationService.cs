@@ -17,7 +17,7 @@ namespace CacheSimulator.ApplicationService
         {
             SimulationParameters = simulationParameters;
             SetMemory();
-            //_SetIndexCount();
+            _SetIndexCount();
             CacheViewModel = new CacheViewModel(IndexCount);
 
             CacheLineFrequencies = new List<Int32>(new Int32[IndexCount]);
@@ -25,10 +25,34 @@ namespace CacheSimulator.ApplicationService
             Fifo = new List<Int32>();
         }
 
-        private void _SetIndexCount()
+        private static void _SetIndexCount()
         {
-            //IndexCount = SimulationParameters
+            Int32 totalCacheLinesCount = SimulationParameters.CacheSize / SimulationParameters.DataSize;
+            IndexCount = totalCacheLinesCount / SimulationParameters.SetCount;
         }
 
+        public Address GetCurrentAddressBreakdown()
+        {
+            String addressInBits = GetCurrentAddressInBits();
+            Int32 tagSize = _GetTagSizeInBits();
+            Int32 indexSize = _GetIndexSizeInBits();
+
+            return new Address
+            {
+                TagBinary = addressInBits.Substring(0, tagSize),
+                IndexBinary = addressInBits.Substring(tagSize, indexSize),
+                OffsetBinary = addressInBits.Substring(tagSize + indexSize , GetOffsetSizeInBits()),
+            };
+        }
+
+        private Int32 _GetIndexSizeInBits()
+        {
+            return Convert.ToInt32(Math.Log2(IndexCount));
+        }
+
+        private Int32 _GetTagSizeInBits()
+        {
+            return AddressSize - _GetIndexSizeInBits() - GetOffsetSizeInBits();
+        }
     }
 }

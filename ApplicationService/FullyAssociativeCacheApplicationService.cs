@@ -40,11 +40,6 @@ namespace CacheSimulator.ApplicationService
             };
         }
 
-        public Int32 GetIndexCount()
-        {
-            return IndexCount;
-        }
-
         private Int32 _GetTagSizeInBits()
         {
             return AddressSize - GetOffsetSizeInBits();

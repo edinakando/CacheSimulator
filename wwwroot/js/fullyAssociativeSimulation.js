@@ -37,8 +37,8 @@
             $.notify("Finding all blocks where the valid bit is 1", "success");
 
             for (var index = 0; index < this.indexCount; index++) {
-                if ($("#valid-" + index).text() == 1) {
-                    $("#cacheRow-" + index).addClass('highlight');
+                if ($("#set-0-valid-" + index).text() == 1) {
+                    $("#set-0-cacheRow-" + index).addClass('highlight');
                     this.validBlocks.push(index);
                     this.existValidBlocks = 1;
                 }
@@ -48,13 +48,13 @@
             if (this.existValidBlocks) {
                 $.notify("Valid blocks found", "success");
                 for (var index = 0; index < this.validBlocks.length; index++) {
-                    $("#valid-" + this.validBlocks[index]).addClass('highlight-more');
+                    $("#set-0-valid-" + this.validBlocks[index]).addClass('highlight-more');
                 }
             }
             else {
                 $.notify("No valid blocks found => Cache MISS", "error");
                 for (var index = 0; index < FullyAssociativeSimulation.indexCount; index++) {
-                    $("#valid-" + index).addClass('highlight-red');
+                    $("#set-0-valid-" + index).addClass('highlight-red');
                 }
             }
         }
@@ -63,8 +63,8 @@
                 $.notify("Comparing corresponding tags", "success");
                 $("#tagValue").addClass('highlight-more');
                 for (var index = 0; index < this.validBlocks.length; index++) {
-                    $("#valid-" + this.validBlocks[index]).removeClass('highlight-more');
-                    $("#tag-" + this.validBlocks[index]).addClass('highlight-more');
+                    $("#set-0-valid-" + this.validBlocks[index]).removeClass('highlight-more');
+                    $("#set-0-tag-" + this.validBlocks[index]).addClass('highlight-more');
                     this.isComparingTags = 1;
                 }
             }
@@ -76,10 +76,10 @@
         else if (this.currentStep == 5) {
             if (this.isComparingTags) {
                 for (var i = 0; i < this.validBlocks.length; i++) {
-                    if ($("#tag-" + this.validBlocks[i]).text() == $("#tagValue").text()) {
+                    if ($("#set-0-tag-" + this.validBlocks[i]).text() == $("#tagValue").text()) {
                         $.notify("Equal tags found => Cache HIT", "success");
-                        $("#tag-" + this.validBlocks[i]).removeClass('highlight-more')
-                        $("#cacheRow-" + this.validBlocks[i]).addClass('highlight-hit');
+                        $("#set-0-tag-" + this.validBlocks[i]).removeClass('highlight-more')
+                        $("#set-0-cacheRow-" + this.validBlocks[i]).addClass('highlight-hit');
                         this.isHit = 1;
 
                         $.ajax({
@@ -96,7 +96,7 @@
                 if (this.isHit == 0) {
                     $.notify("Tags don't match => Cache MISS", "error");
                     for (var i = 0; i < this.validBlocks.length; i++) {
-                        $("#tag-" + this.validBlocks[i]).addClass('highlight-red')
+                        $("#set-0-tag-" + this.validBlocks[i]).addClass('highlight-red')
                         $("#tagValue").addClass('highlight-red')
                     }
                 }
@@ -122,8 +122,6 @@
                 $("#addressRow").addClass('highlight');
                 $("#tagValue").text(response.tagBinary);
                 $("#offsetValue").text(response.offsetBinary);
-
-                DirectMappedSimulation.index = parseInt(response.indexBinary, 2);
             }
         });
     },
@@ -135,21 +133,21 @@
             async: false,
             success: function (response) {
                 $.notify(response.cacheUpdateTypeMessage, "success");
-                $("#valid-" + response.lastUpdatedIndex).text('1');
-                $("#tag-" + response.lastUpdatedIndex).text(response.tags[response.lastUpdatedIndex]);
-                $("#data-" + response.lastUpdatedIndex).text(response.cacheLines[response.lastUpdatedIndex].data.toString());
+                $("#set-0-valid-" + response.lastUpdatedIndex).text('1');
+                $("#set-0-tag-" + response.lastUpdatedIndex).text(response.tags[response.lastUpdatedIndex]);
+                $("#set-0-data-" + response.lastUpdatedIndex).text(response.cacheLines[response.lastUpdatedIndex].data.toString());
 
                 FullyAssociativeSimulation.lastUpdatedIndex = response.lastUpdatedIndex;
                 Simulation.currentMemoryAddress = response.currentMemoryAddress * Simulation.cacheLineSize;
 
-                $("#cacheRow-" + FullyAssociativeSimulation.lastUpdatedIndex).addClass('highlight');
+                $("#set-0-cacheRow-" + FullyAssociativeSimulation.lastUpdatedIndex).addClass('highlight');
 
                 for (var i = Simulation.currentMemoryAddress; i < Simulation.currentMemoryAddress + Simulation.cacheLineSize; i++) {
                     $("#memory-" + i).addClass('highlight');
                 }
 
                 for (var index = 0; index < FullyAssociativeSimulation.indexCount; index++) {
-                    $("#valid-" + index).removeClass('highlight-red');
+                    $("#set-0-valid-" + index).removeClass('highlight-red');
                 }
 
                 Simulation.updateButtons();
@@ -195,9 +193,9 @@
 
     removeAllHighlightFromCache: function () {
         for (var cacheLine = 0; cacheLine < this.indexCount; cacheLine++) {
-            $("#cacheRow-" + cacheLine).removeAttr('class');
-            $("#tag-" + cacheLine).removeAttr('class');
-            $("#valid-" + cacheLine).removeAttr('class');
+            $("#set-0-cacheRow-" + cacheLine).removeAttr('class');
+            $("#set-0-tag-" + cacheLine).removeAttr('class');
+            $("#set-0-valid-" + cacheLine).removeAttr('class');
         }
     },
 }

@@ -6,13 +6,15 @@
 <partial name="_SimulationInputsSideMenu">
 
 <div id="addressBreakdown">
-    <table border="1" width="30%">
+    <table border="1" width="40%">
         <tr align="center">
             <td>Tag</td>
-            <td width="30%">Offset</td>
+            <td width="25%">Index</td>
+            <td width="25%">Offset</td>
         </tr>
         <tr id="addressRow" align="center">
             <td><h id="tagValue"></h></td>
+            <td><h id="indexValue"></h></td>
             <td><h id="offsetValue"></h></td>
         </tr>
     </table>
@@ -21,4 +23,4 @@
 <div id="cacheTableContainer"></div>
 <div id="memoryTableContainer"></div>
 
-<script>TableCreator.drawCacheAndMemory(4, 2)</script>
+<script>TableCreator.drawCacheAndMemory(2, 2)</script>

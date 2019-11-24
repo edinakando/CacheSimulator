@@ -61,6 +61,10 @@
         }
         else if (windowLocation.includes("setassociative")) {
             this.isSetAssociativeCache = 1
+
+            const urlParams = new URLSearchParams(window.location.search);
+            simulationParameters.SetCount = urlParams.get('setCount');
+
             SetAssociativeSimulation.startSimulation(simulationParameters);
         }
     },
@@ -99,7 +103,7 @@
         else if (this.isFullyAssociativeCache == 1) {
             FullyAssociativeSimulation.nextStep();
         }
-        else if (this.isFullyAssociativeCache == 1) {
+        else if (this.isSetAssociativeCache == 1) {
             SetAssociativeSimulation.nextStep();
         }
     },
