@@ -38,5 +38,20 @@ namespace CacheSimulator.Controllers
             return Json(_applicationService.GetCurrentAddressBreakdown());
         }
 
+        [HttpGet]
+        public IActionResult UpdateCache()
+        {
+            return Json(_applicationService.UpdateCache());
+        }
+
+        public void Reset()
+        {
+            SetAssociativeCacheApplicationService.Reset();
+        }
+
+        public void NextInstruction()
+        {
+            _applicationService.NextInstruction();
+        }
     }
 }

@@ -66,6 +66,7 @@
 
             if (currentMemoryTag == currentCacheTag) {
                 $.notify("Tags are equal => Cache HIT", "success");
+                $("#set-0-cacheRow-" + this.index).addClass('highlight-hit');
                 this.isHit = 1;
             }
             else {
