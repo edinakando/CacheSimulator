@@ -9,7 +9,7 @@ namespace CacheSimulator.ApplicationService
 {
     public class SetAssociativeCacheApplicationService : CacheApplicationService
     {
-        public static IList<Int32> CacheLineFrequencies { get; set; }
+        public static IDictionary<Int32, IList<Int32>> CacheLineFrequencies { get; set; } //pentru fiecare index - seturile
         public static IList<Int32> CacheLineLastUsageTimes { get; set; }
         public static IList<Int32> Fifo { get; set; }
         public new static SetAssociativeCacheViewModel CacheViewModel { get; set; }
@@ -20,7 +20,11 @@ namespace CacheSimulator.ApplicationService
             _SetIndexCount();
             CacheViewModel = new SetAssociativeCacheViewModel(simulationParameters.SetCount, IndexCount);
 
-            CacheLineFrequencies = new List<Int32>(new Int32[IndexCount]);
+            CacheLineFrequencies = new Dictionary<Int32, IList<Int32>>();
+            for(var set = 0; set < SimulationParameters.SetCount; set++)
+            {
+                CacheLineFrequencies.Add(set, new List<Int32>(new Int32[IndexCount]));
+            }
             CacheLineLastUsageTimes = new List<Int32>(new Int32[IndexCount]);
             Fifo = new List<Int32>();
         }
@@ -58,12 +62,15 @@ namespace CacheSimulator.ApplicationService
         public SetAssociativeCacheViewModel UpdateCache()
         {
             Boolean isFull = true;
-            Int32 cacheLine = _GetCurrentIndex();
+            Int32 cacheLine = _GetCurrentIndex();  //asta e de fapt setul
+
             for (var set = 0; set < SimulationParameters.SetCount; set++)
             {
                 if (CacheViewModel.Cache[set].CacheLines[cacheLine] == null)
                 {
                     _PlaceDataAtIndex(cacheLine, set);
+                    UpdateStatistics(set, cacheLine);
+                    CacheViewModel.LastUpdatedSet = set;
                     Fifo.Add(cacheLine);
                     CacheViewModel.Cache[set].CacheUpdateTypeMessage = "Copying data to an unused cache line.";
                     isFull = false;
@@ -71,23 +78,25 @@ namespace CacheSimulator.ApplicationService
                 }
             }
 
-            //if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LFU)
-            //{
-            //    Int32 frequency = CacheLineFrequencies[0];
-            //    Int32 replacedIndex = 0;
+            if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LFU)
+            {
+                IList<Int32> setFrequencies = CacheLineFrequencies[cacheLine];
+                Int32 frequency = setFrequencies[0];
+                Int32 replacedIndexFromSet = 0;
 
-            //    for (var index = 1; index < CacheLineFrequencies.Count; index++)
-            //    {
-            //        if (CacheLineFrequencies[index] < frequency)
-            //        {
-            //            replacedIndex = index;
-            //            frequency = CacheLineFrequencies[index];
-            //        }
-            //    }
+                for (var index = 1; index < setFrequencies.Count; index++)
+                {
+                    if (setFrequencies[index] < frequency)
+                    {
+                        replacedIndexFromSet = index;
+                        frequency = setFrequencies[index];
+                    }
+                }
 
-            //    _PlaceDataAtIndex(replacedIndex);
-            //    CacheViewModel.CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
-            //}
+                _PlaceDataAtIndex(cacheLine, replacedIndexFromSet);
+                UpdateStatistics(replacedIndexFromSet, cacheLine);
+                CacheViewModel.Cache[cacheLine].CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
+            }
             //else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LRU)
             //{
             //    Int32 usageTime = CacheLineLastUsageTimes[0];
@@ -135,15 +144,11 @@ namespace CacheSimulator.ApplicationService
             CacheViewModel.Cache[set].CacheLines[currentIndex] = Memory[blockIndex];
             CacheViewModel.Cache[set].CurrentMemoryAddress = blockIndex;
             CacheViewModel.Cache[set].LastUpdatedIndex = currentIndex;
-            CacheViewModel.LastUpdatedSet = set;
-
-            UpdateStatistics(currentIndex);  //poate si pe seturi?
-
         }
 
-        public void UpdateStatistics(Int32 currentIndex)
+        public void UpdateStatistics(Int32 currentIndex, Int32 currentSet)
         {
-            CacheLineFrequencies[currentIndex]++;
+            CacheLineFrequencies[currentSet][currentIndex]++;
 
             Int32 mostRecentTime = -1;
             for (var cacheLine = 0; cacheLine < IndexCount; cacheLine++)

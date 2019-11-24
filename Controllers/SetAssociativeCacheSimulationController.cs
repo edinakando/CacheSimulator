@@ -53,5 +53,10 @@ namespace CacheSimulator.Controllers
         {
             _applicationService.NextInstruction();
         }
+
+        public void CacheHit(Int32 index, Int32 set)
+        {
+            _applicationService.UpdateStatistics(index, set);
+        }
     }
 }

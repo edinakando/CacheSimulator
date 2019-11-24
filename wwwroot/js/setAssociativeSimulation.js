@@ -79,12 +79,15 @@
                         $("#set-" + this.validBlocks[set] + "-cacheRow-" + this.index).addClass('highlight-hit');
                         this.isHit = 1;
 
-                        //$.ajax({
-                        //    type: 'POST',
-                        //    async: false,
-                        //    url: '/FullyAssociativeCacheSimulation/CacheHit',
-                        //    data: { index: FullyAssociativeSimulation.validBlocks[i] }
-                        //});
+                        $.ajax({
+                            type: 'POST',
+                            async: false,
+                            url: '/SetAssociativeCacheSimulation/CacheHit',
+                            data: {
+                                index: this.validBlocks[set],
+                                set: this.index
+                            }
+                        });
                         break;
                     }
                 }
@@ -185,7 +188,7 @@
 
         this.existValidBlocks = 0;
         this.isComparingTags = 0;
-        //this.isHit = 0;
+        this.isHit = 0;
 
         $.ajax({
             type: 'POST',
