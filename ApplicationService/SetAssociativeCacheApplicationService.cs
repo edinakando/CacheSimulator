@@ -2,16 +2,14 @@
 using CacheSimulator.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CacheSimulator.ApplicationService
 {
     public class SetAssociativeCacheApplicationService : CacheApplicationService
     {
         public static IDictionary<Int32, IList<Int32>> CacheLineFrequencies { get; set; } //pentru fiecare index - seturile
-        public static IList<Int32> CacheLineLastUsageTimes { get; set; }
-        public static IList<Int32> Fifo { get; set; }
+        public static IDictionary<Int32, IList<Int32>> CacheLineLastUsageTimes { get; set; }
+        public static List<KeyValuePair<Int32, Int32>> Fifo { get; set; }
         public new static SetAssociativeCacheViewModel CacheViewModel { get; set; }
         public static void SetupSimulation(SimulationParameters simulationParameters)
         {
@@ -21,12 +19,14 @@ namespace CacheSimulator.ApplicationService
             CacheViewModel = new SetAssociativeCacheViewModel(simulationParameters.SetCount, IndexCount);
 
             CacheLineFrequencies = new Dictionary<Int32, IList<Int32>>();
+            CacheLineLastUsageTimes = new Dictionary<Int32, IList<Int32>>();
+           
             for(var set = 0; set < SimulationParameters.SetCount; set++)
             {
                 CacheLineFrequencies.Add(set, new List<Int32>(new Int32[IndexCount]));
+                CacheLineLastUsageTimes.Add(set, new List<Int32>(new Int32[IndexCount]));
             }
-            CacheLineLastUsageTimes = new List<Int32>(new Int32[IndexCount]);
-            Fifo = new List<Int32>();
+            Fifo = new List<KeyValuePair<Int32, Int32>>();
         }
 
         private static void _SetIndexCount()
@@ -71,7 +71,7 @@ namespace CacheSimulator.ApplicationService
                     _PlaceDataAtIndex(cacheLine, set);
                     UpdateStatistics(set, cacheLine);
                     CacheViewModel.LastUpdatedSet = set;
-                    Fifo.Add(cacheLine);
+                    Fifo.Add(new KeyValuePair<int, int>(cacheLine, set));
                     CacheViewModel.Cache[set].CacheUpdateTypeMessage = "Copying data to an unused cache line.";
                     isFull = false;
                     break;
@@ -95,31 +95,36 @@ namespace CacheSimulator.ApplicationService
 
                 _PlaceDataAtIndex(cacheLine, replacedIndexFromSet);
                 UpdateStatistics(replacedIndexFromSet, cacheLine);
+                CacheViewModel.LastUpdatedSet = replacedIndexFromSet;
                 CacheViewModel.Cache[cacheLine].CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
             }
-            //else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LRU)
-            //{
-            //    Int32 usageTime = CacheLineLastUsageTimes[0];
-            //    Int32 replacedIndex = 0;
+            else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LRU)
+            {
+                IList<Int32> setUsageTimes = CacheLineLastUsageTimes[cacheLine];
+                Int32 usageTime = setUsageTimes[0];
+                Int32 replacedIndexFromSet = 0;
 
-            //    for (var index = 1; index < CacheLineLastUsageTimes.Count; index++)
-            //    {
-            //        if (CacheLineLastUsageTimes[index] < usageTime)
-            //        {
-            //            replacedIndex = index;
-            //            usageTime = CacheLineLastUsageTimes[index];
-            //        }
-            //    }
+                for (var index = 1; index < setUsageTimes.Count; index++)
+                {
+                    if (setUsageTimes[index] < usageTime)
+                    {
+                        replacedIndexFromSet = index;
+                        usageTime = setUsageTimes[index];
+                    }
+                }
 
-            //    _PlaceDataAtIndex(replacedIndex);
-            //    CacheViewModel.CacheUpdateTypeMessage = "Copying data to least recently used cache line.";
-            //}
-            //else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.FIFO)
-            //{
-            //    _PlaceDataAtIndex(Fifo[0]);
-            //    Fifo.RemoveAt(0);
-            //    CacheViewModel.CacheUpdateTypeMessage = "Copying data to first cache line updated.";
-            //}
+                _PlaceDataAtIndex(cacheLine, replacedIndexFromSet);
+                UpdateStatistics(replacedIndexFromSet, cacheLine);
+                CacheViewModel.LastUpdatedSet = replacedIndexFromSet;
+                CacheViewModel.Cache[cacheLine].CacheUpdateTypeMessage = "Copying data to least recently used cache line.";
+            }
+            else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.FIFO)
+            {
+                _PlaceDataAtIndex(Fifo[0].Key, Fifo[0].Value);
+                CacheViewModel.LastUpdatedSet = Fifo[0].Value;
+                CacheViewModel.Cache[Fifo[0].Key].CacheUpdateTypeMessage = "Copying data to first cache line updated.";
+                Fifo.RemoveAt(0);
+            }
 
             return CacheViewModel;
         }
@@ -151,14 +156,15 @@ namespace CacheSimulator.ApplicationService
             CacheLineFrequencies[currentSet][currentIndex]++;
 
             Int32 mostRecentTime = -1;
-            for (var cacheLine = 0; cacheLine < IndexCount; cacheLine++)
+            IList<Int32> setUsageTimes = CacheLineLastUsageTimes[currentSet];
+            for (var cacheLine = 0; cacheLine < setUsageTimes.Count; cacheLine++)
             {
-                if (CacheLineLastUsageTimes[cacheLine] > mostRecentTime)
+                if (setUsageTimes[cacheLine] > mostRecentTime)
                 {
-                    mostRecentTime = CacheLineLastUsageTimes[cacheLine];
+                    mostRecentTime = setUsageTimes[cacheLine];
                 }
             }
-            CacheLineLastUsageTimes[currentIndex] = ++mostRecentTime;
+            CacheLineLastUsageTimes[currentSet][currentIndex] = ++mostRecentTime;
         }
     }
 
