@@ -48,5 +48,11 @@ namespace CacheSimulator.Controllers
         {
             DirectMappedCacheApplicationService.Reset();
         }
+
+        [HttpGet]
+        public IActionResult WriteToMemory()
+        {
+            return Json(_applicationService.WriteToMemory());
+        }
     }
 }

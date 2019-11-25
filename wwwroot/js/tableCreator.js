@@ -19,6 +19,7 @@ var TableCreator = {
                                         <tr align=center>
                                             <td width=15%>Index</td>
                                             <td width=15%>Valid</td>
+                                            <td width=15%>Dirty Bit</td>
                                             <td>Tag</td>
                                             <td>Data</td>
                                         </tr>`;
@@ -27,6 +28,7 @@ var TableCreator = {
             cacheTable += "<tr id=\"set-" + setCount + "-cacheRow-" + index + "\" align=center>" +
                 "<td>" + index + "</td>" +
                 "<td id=\"set-" + setCount + "-valid-" + index + "\">0</td>" +
+                "<td id=\"set-" + setCount + "-dirty-" + index + "\">0</td>" +
                 "<td id=\"set-" + setCount + "-tag-" + index + "\"></td>" +
                 "<td id=\"set-" + setCount + "-data-" + index + "\"></td></tr>";
         }

@@ -5,9 +5,15 @@
     isValid: 0,
     isHit: 0,
     currentMemoryAddress: 0,
+    instructionType: "",
+    memoryAddress: 0,
+    operations: [],
 
     startSimulation: function (simulationParameters) {
         TableCreator.drawCacheAndMemory(simulationParameters.CacheSize / simulationParameters.DataSize, 1);
+        this.operations = simulationParameters.Operations;
+        this.instructionType = this.operations[this.currentInstruction].Type;
+        this.memoryAddress = this.operations[this.currentInstruction].Address;
 
         $.ajax({
             type: "POST",
@@ -53,44 +59,101 @@
                 this.isValid = 1;
             }
         }
-        else if (this.currentStep == 5 && this.isValid == 0) {
-            $.notify("Updating cache", "success");
-            $("#set-0-valid-" + this.index).removeClass('highlight-red');
-            $("#set-0-valid-" + this.index).removeClass('highlight-more');
+        else if (this.instructionType.toLowerCase() == "read") {
+            if (this.currentStep == 5 && this.isValid == 0) {
+                $.notify("Updating cache", "success");
+                $("#set-0-valid-" + this.index).removeClass('highlight-red');
+                $("#set-0-valid-" + this.index).removeClass('highlight-more');
 
-            DirectMappedSimulation.updateCache();
-        }
-        else if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
-            var currentMemoryTag = $("#tagValue").text();
-            var currentCacheTag = $("#set-0-tag-" + this.index).text();
+                DirectMappedSimulation.updateCache();
+            }
+            else if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
+                var currentMemoryTag = $("#tagValue").text();
+                var currentCacheTag = $("#set-0-tag-" + this.index).text();
 
-            if (currentMemoryTag == currentCacheTag) {
-                $.notify("Tags are equal => Cache HIT", "success");
-                $("#set-0-cacheRow-" + this.index).addClass('highlight-hit');
-                this.isHit = 1;
+                if (currentMemoryTag == currentCacheTag) {
+                    $.notify("Tags are equal => Cache HIT", "success");
+                    $("#set-0-cacheRow-" + this.index).addClass('highlight-hit');
+                    this.isHit = 1;
+                }
+                else {
+                    $.notify("Tags are different => Cache MISS", "error");
+                    $("#tagValue").addClass('highlight-red');
+                    $("#set-0-tag-" + this.index).addClass('highlight-red');
+                }
+
+                this.isValid = 0;
+            }
+            else if (this.currentStep == 6 && this.isHit == 0) {
+                $.notify("Updating cache", "success");
+                DirectMappedSimulation.updateCache();
             }
             else {
-                $.notify("Tags are different => Cache MISS", "error");
-                $("#tagValue").addClass('highlight-red');
-                $("#set-0-tag-" + this.index).addClass('highlight-red');
+                this.isHit = 0;
+                Simulation.updateButtons();
             }
-
-            this.isValid = 0;
         }
-        else if (this.currentStep == 6 && this.isHit == 0) {
-            $.notify("Updating cache", "success");
+        else if (this.instructionType.toLowerCase() == "write") {
+            if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
+                var currentMemoryTag = $("#tagValue").text();
+                var currentCacheTag = $("#set-0-tag-" + this.index).text();
 
-            DirectMappedSimulation.updateCache();
-        }
-        else {
-            this.isHit = 0;
-            Simulation.updateButtons();
+                if (currentMemoryTag == currentCacheTag) {
+                    $.notify("Tags are equal => Cache HIT", "success");
+                    $("#set-0-cacheRow-" + this.index).addClass('highlight-hit');
+                    this.isHit = 1;
+                }
+                else {
+                    $.notify("Tags are different => Cache MISS", "error");
+                    $("#tagValue").addClass('highlight-red');
+                    $("#set-0-tag-" + this.index).addClass('highlight-red');
+                }
+
+                this.isValid = 0;
+            }
+            else if ((this.currentStep == 5 && this.isValid == 0) || (this.currentStep == 6 && this.isHit)) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/DirectMappedCacheSimulation/WriteToMemory',
+                    success: function (response) {
+                        Simulation.currentMemoryAddress = response.cacheViewModel.currentMemoryAddress * Simulation.cacheLineSize;
+                        var memoryAddress = Simulation.currentMemoryAddress + response.updatedPlaceInMemoryBlock;
+
+                        if (response.isCacheUpdated && response.isMemoryUpdated) {
+                            $.notify("Updating cache and memory", "success");
+                        }
+                        if (response.isCacheUpdated) {
+                            if (DirectMappedSimulation.isHit == 0) {
+                                $("#set-0-tag-" + DirectMappedSimulation.index).addClass('highlight-more');
+                            }
+
+                            $("#set-0-data-" + DirectMappedSimulation.index).addClass('highlight-more');
+                        }
+                        if (response.isMemoryUpdated) {
+                            $("#memory-" + memoryAddress).addClass('highlight');
+                        }
+
+                        $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
+                        $("#set-0-tag-" + DirectMappedSimulation.index).text(response.cacheViewModel.tags[DirectMappedSimulation.index]);
+                        $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheViewModel.cacheLines[DirectMappedSimulation.index].data.toString());
+
+
+                        $("#memory-" + memoryAddress).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[response.updatedPlaceInMemoryBlock]);
+                    }
+                });
+            }
+            else {
+                Simulation.updateButtons();
+            }
         }
     },
 
     nextInstruction: function () {
         this.currentStep = 0;
         this.currentInstruction++;
+
+        this.instructionType = this.operations[this.currentInstruction].Type;
+        this.memoryAddress = this.operations[this.currentInstruction].Address;
 
         $("#nextStepButton").attr("hidden", false);
         $("#nextInstructionButton").attr("hidden", true);

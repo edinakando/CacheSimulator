@@ -72,5 +72,37 @@ namespace CacheSimulator.ApplicationService
             return AddressSize - _GetIndexSizeInBits() - GetOffsetSizeInBits();
         }
 
+        public WriteOperationViewModel WriteToMemory()
+        {
+            Int32 address = SimulationParameters.Operations[CurrentOperationIndex].Address;
+            Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
+            Int32 blockIndex = address / cacheLineSizeInMemoryBlocks;
+            Int32 currentIndex = _GetCurrentIndex();
+            String newData = SimulationParameters.Operations[CurrentOperationIndex].Data;
+            var updatedData = new WriteOperationViewModel();
+
+            if (SimulationParameters.WritePolicy == WritePolicy.WriteThrough)
+            {
+                if(SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate) //update cache and memory always
+                {
+                    Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                    updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+
+                    CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
+                    CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
+                    CacheViewModel.CurrentMemoryAddress = blockIndex;
+                    updatedData.IsCacheUpdated = true;
+                    updatedData.IsMemoryUpdated = true;
+                }
+                else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
+                {
+
+                }
+            }
+
+            updatedData.CacheViewModel = CacheViewModel;
+            updatedData.Memory = Memory;
+            return updatedData;
+        }
     }
 }
