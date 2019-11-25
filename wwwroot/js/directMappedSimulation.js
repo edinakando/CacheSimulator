@@ -119,26 +119,25 @@
                         Simulation.currentMemoryAddress = response.cacheViewModel.currentMemoryAddress * Simulation.cacheLineSize;
                         var memoryAddress = Simulation.currentMemoryAddress + response.updatedPlaceInMemoryBlock;
 
-                        if (response.isCacheUpdated && response.isMemoryUpdated) {
-                            $.notify("Updating cache and memory", "success");
-                        }
                         if (response.isCacheUpdated) {
+                            $.notify("Updating cache", "success");
+
                             if (DirectMappedSimulation.isHit == 0) {
                                 $("#set-0-tag-" + DirectMappedSimulation.index).addClass('highlight-more');
                             }
 
+                            $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
+                            $("#set-0-tag-" + DirectMappedSimulation.index).text(response.cacheViewModel.tags[DirectMappedSimulation.index]);
+                            $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheViewModel.cacheLines[DirectMappedSimulation.index].data.toString());
+
                             $("#set-0-data-" + DirectMappedSimulation.index).addClass('highlight-more');
                         }
                         if (response.isMemoryUpdated) {
+                            $.notify("Updating memory", "success");
+
                             $("#memory-" + memoryAddress).addClass('highlight');
+                            $("#memory-" + memoryAddress).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[response.updatedPlaceInMemoryBlock]);
                         }
-
-                        $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
-                        $("#set-0-tag-" + DirectMappedSimulation.index).text(response.cacheViewModel.tags[DirectMappedSimulation.index]);
-                        $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheViewModel.cacheLines[DirectMappedSimulation.index].data.toString());
-
-
-                        $("#memory-" + memoryAddress).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[response.updatedPlaceInMemoryBlock]);
                     }
                 });
             }

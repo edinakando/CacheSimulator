@@ -96,7 +96,10 @@ namespace CacheSimulator.ApplicationService
                 }
                 else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
                 {
-
+                    Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                    updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                    updatedData.IsMemoryUpdated = true;
+                    CacheViewModel.CurrentMemoryAddress = blockIndex;
                 }
             }
 
