@@ -129,6 +129,7 @@
                             $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
                             $("#set-0-tag-" + DirectMappedSimulation.index).text(response.cacheViewModel.tags[DirectMappedSimulation.index]);
                             $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheViewModel.cacheLines[DirectMappedSimulation.index].data.toString());
+                            $("#set-0-dirty-" + DirectMappedSimulation.index).text(response.cacheViewModel.dirtyBit[DirectMappedSimulation.index]);
 
                             $("#set-0-data-" + DirectMappedSimulation.index).addClass('highlight-more');
                         }
@@ -137,6 +138,8 @@
 
                             $("#memory-" + memoryAddress).addClass('highlight');
                             $("#memory-" + memoryAddress).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[response.updatedPlaceInMemoryBlock]);
+
+                            $("#set-0-dirty-" + DirectMappedSimulation.index).text(0);
                         }
                     }
                 });

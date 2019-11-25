@@ -102,6 +102,58 @@ namespace CacheSimulator.ApplicationService
                     CacheViewModel.CurrentMemoryAddress = blockIndex;
                 }
             }
+            else if(SimulationParameters.WritePolicy == WritePolicy.WriteBack)
+            {
+                if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate)
+                {
+                    if(CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTag()) //cache miss
+                    {
+                        var updatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+
+                        CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
+
+                        CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
+                        CacheViewModel.CacheLines[currentIndex].Data[updatedPlaceInMemoryBlock] = newData;
+
+                        CacheViewModel.CurrentMemoryAddress = blockIndex;
+                        CacheViewModel.UpdatedMemoryAddress[currentIndex] = address;
+
+                        CacheViewModel.DirtyBit[currentIndex] = 1;
+
+                        updatedData.IsCacheUpdated = true;
+                    }
+                    else //cache hit
+                    {
+                        if(CacheViewModel.DirtyBit[currentIndex] == 1)
+                        {
+                            //copy data from cache to memory
+                            var updatedMemoryBlockIndex = CacheViewModel.UpdatedMemoryAddress[currentIndex] / cacheLineSizeInMemoryBlocks;
+                            Memory[updatedMemoryBlockIndex].Data = CacheViewModel.CacheLines[currentIndex].Data; //copiaza tot blocul
+                            updatedData.UpdatedPlaceInMemoryBlock = CacheViewModel.UpdatedMemoryAddress[currentIndex] % cacheLineSizeInMemoryBlocks;
+
+                            CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
+
+                            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
+                            CacheViewModel.CacheLines[currentIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+
+                            CacheViewModel.CurrentMemoryAddress = blockIndex;
+                            CacheViewModel.UpdatedMemoryAddress[currentIndex] = address;
+
+                            updatedData.IsMemoryUpdated = true;
+                            updatedData.IsCacheUpdated = true;
+                        }
+                        else
+                        {
+                            CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
+                            CacheViewModel.DirtyBit[currentIndex] = 1;
+                            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
+                            CacheViewModel.CurrentMemoryAddress = blockIndex;
+                            updatedData.IsCacheUpdated = true;
+                        }
+                    }
+                    
+                }
+            }
 
             updatedData.CacheViewModel = CacheViewModel;
             updatedData.Memory = Memory;
