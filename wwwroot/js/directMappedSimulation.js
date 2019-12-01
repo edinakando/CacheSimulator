@@ -10,8 +10,6 @@
     operations: [],
     isCheckingDirtyBit: 0,
     isComparingTags: 0,
-    response: {},
-    messageCount: 0,
 
     startSimulation: function (simulationParameters) {
         TableCreator.drawCacheAndMemory(simulationParameters.CacheSize / simulationParameters.DataSize, 1);
