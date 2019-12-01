@@ -11,7 +11,9 @@ namespace CacheSimulator.ViewModels
 
         public Boolean IsCacheUpdated { get; set; } = false;
         public Boolean IsMemoryUpdated { get; set; } = false;
+        public Boolean AreTagsEqual { get; set; } = false;
 
         public Int32 UpdatedPlaceInMemoryBlock { get; set; }
+
     }
 }

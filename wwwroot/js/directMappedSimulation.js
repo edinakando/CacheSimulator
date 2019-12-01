@@ -8,6 +8,10 @@
     instructionType: "",
     memoryAddress: 0,
     operations: [],
+    isCheckingDirtyBit: 0,
+    isComparingTags: 0,
+    response: {},
+    messageCount: 0,
 
     startSimulation: function (simulationParameters) {
         TableCreator.drawCacheAndMemory(simulationParameters.CacheSize / simulationParameters.DataSize, 1);
@@ -56,18 +60,27 @@
                 $("#tagValue").addClass('highlight-more');
                 $("#tag-" + this.index).addClass('highlight-more');
 
-                this.isValid = 1;
+                this.isComparingTags = 1;
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/DirectMappedCacheSimulation/ExecuteCurrentOperation',
+                    success: function (response) {
+                        DirectMappedSimulation.response = response;
+                    }
+                });
             }
         }
         else if (this.instructionType.toLowerCase() == "read") {
-            if (this.currentStep == 5 && this.isValid == 0) {
-                $.notify("Updating cache", "success");
+            if (this.currentStep == 5 && this.isComparingTags == 0) {
+                $.notify("Checking dirty bit", "success");
+                $("#set-0-dirty-" + this.index).addClass('highlight-more');
+                this.isCheckingDirtyBit = 1;
+
                 $("#set-0-valid-" + this.index).removeClass('highlight-red');
                 $("#set-0-valid-" + this.index).removeClass('highlight-more');
-
-                DirectMappedSimulation.updateCache();
             }
-            else if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
+            else if (this.currentStep == 5 && this.isComparingTags == 1) {
                 var currentMemoryTag = $("#tagValue").text();
                 var currentCacheTag = $("#set-0-tag-" + this.index).text();
 
@@ -82,10 +95,20 @@
                     $("#set-0-tag-" + this.index).addClass('highlight-red');
                 }
 
-                this.isValid = 0;
+                this.isComparingTags = 0;
+            }
+            else if (this.currentStep == 6 && this.isCheckingDirtyBit) {
+                DirectMappedSimulation.checkDirtyBit();
             }
             else if (this.currentStep == 6 && this.isHit == 0) {
-                $.notify("Updating cache", "success");
+                $.notify("Checking dirty bit", "success");
+                $("#set-0-dirty-" + this.index).addClass('highlight-more');
+                this.isCheckingDirtyBit = 1
+            }
+            else if (this.currentStep == 7 && this.isCheckingDirtyBit) {
+                DirectMappedSimulation.checkDirtyBit();
+            }
+            else if (this.currentStep == 8) {
                 DirectMappedSimulation.updateCache();
             }
             else {
@@ -94,7 +117,7 @@
             }
         }
         else if (this.instructionType.toLowerCase() == "write") {
-            if (this.currentStep == 5 && this.isValid == 1) {  //Compare tag
+            if (this.currentStep == 5 && this.isComparingTags == 1) {  //Compare tag
                 var currentMemoryTag = $("#tagValue").text();
                 var currentCacheTag = $("#set-0-tag-" + this.index).text();
 
@@ -108,44 +131,26 @@
                     $("#tagValue").addClass('highlight-red');
                     $("#set-0-tag-" + this.index).addClass('highlight-red');
                 }
-
-                this.isValid = 0;
             }
-            else if ((this.currentStep == 5 && this.isValid == 0) || (this.currentStep == 6 && this.isHit)) {
-                $.ajax({
-                    type: 'GET',
-                    url: '/DirectMappedCacheSimulation/WriteToMemory',
-                    success: function (response) {
-                        Simulation.currentMemoryAddress = response.cacheViewModel.currentMemoryAddress * Simulation.cacheLineSize;
-                        var memoryAddress = Simulation.currentMemoryAddress + response.updatedPlaceInMemoryBlock;
-
-                        if (response.isCacheUpdated) {
-                            $.notify("Updating cache", "success");
-
-                            if (DirectMappedSimulation.isHit == 0) {
-                                $("#set-0-tag-" + DirectMappedSimulation.index).addClass('highlight-more');
-                            }
-
-                            $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
-                            $("#set-0-tag-" + DirectMappedSimulation.index).text(response.cacheViewModel.tags[DirectMappedSimulation.index]);
-                            $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheViewModel.cacheLines[DirectMappedSimulation.index].data.toString());
-                            $("#set-0-dirty-" + DirectMappedSimulation.index).text(response.cacheViewModel.dirtyBit[DirectMappedSimulation.index]);
-
-                            $("#set-0-data-" + DirectMappedSimulation.index).addClass('highlight-more');
-                        }
-                        if (response.isMemoryUpdated) {
-                            $.notify("Updating memory", "success");
-
-                            $("#memory-" + memoryAddress).addClass('highlight');
-                            $("#memory-" + memoryAddress).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[response.updatedPlaceInMemoryBlock]);
-
-                            $("#set-0-dirty-" + DirectMappedSimulation.index).text(0);
-                        }
-                    }
-                });
+            else if (this.currentStep == 5 && this.isComparingTags == 0) {
+                this.writeToMemory();
+            }
+            else if (this.currentStep == 6 && this.isComparingTags == 1 && this.isHit == 0) {
+                $.notify("Checking dirty bit", "success");
+                $("#set-0-dirty-" + this.index).addClass('highlight-more');
+                this.isCheckingDirtyBit = 1
+            }
+            else if (this.currentStep == 6 && this.isHit) {
+                this.writeToMemory();
+            }
+            else if (this.currentStep == 7 && this.isHit == 0) {
+                this.checkDirtyBit();
+            }
+            else if (this.currentStep == 8) {
+                this.writeToMemory();
             }
             else {
-                Simulation.updateButtons();
+                 Simulation.updateButtons();
             }
         }
     },
@@ -157,6 +162,10 @@
         this.instructionType = this.operations[this.currentInstruction].Type;
         this.memoryAddress = this.operations[this.currentInstruction].Address;
 
+        this.isHit = 0;
+        this.isCheckingDirtyBit = 0;
+        this.isValid = 0;
+
         $("#nextStepButton").attr("hidden", false);
         $("#nextInstructionButton").attr("hidden", true);
 
@@ -165,6 +174,7 @@
         $("#set-0-valid-" + DirectMappedSimulation.index).removeAttr('class');
         $("#set-0-tag-" + DirectMappedSimulation.index).removeAttr('class');
         $("#set-0-data-" + DirectMappedSimulation.index).removeAttr('class');
+        $("#set-0-dirty-" + DirectMappedSimulation.index).removeAttr('class');
         $("#tagValue").removeAttr('class');
 
         for (var i = Simulation.currentMemoryAddress; i < Simulation.currentMemoryAddress + Simulation.cacheLineSize; i++) {
@@ -231,4 +241,67 @@
         });
     },
 
+    checkDirtyBit: function () {
+        if ($("#set-0-dirty-" + this.index).text() == 1) {
+            $.notify("Dirty bit is 1 => update memory", "success");
+            DirectMappedSimulation.updateMemoryOnRead();
+        }
+        else {
+            $.notify("Dirty bit is 0 => update cache", "success");
+            $("#set-0-dirty-" + this.index).removeClass('highlight-more');
+            DirectMappedSimulation.updateCache();
+        }
+
+        this.isCheckingDirtyBit = 0;
+    },
+
+    updateMemoryOnRead: function () {
+        $.ajax({
+            type: 'GET',
+            url: 'DirectMappedCacheSimulation/UpdateMemoryOnRead',
+            success: function (response) {
+                DirectMappedSimulation.updateUIAfterWrite(response);
+            }
+        });
+    },
+
+    updateUIAfterWrite: function (response) {
+        Simulation.currentMemoryAddress = response.cacheViewModel.currentMemoryAddress * Simulation.cacheLineSize;
+        var memoryAddress = Simulation.currentMemoryAddress; //+ response.updatedPlaceInMemoryBlock;
+
+        if (response.isCacheUpdated) {
+            $.notify("Updating cache", "success");
+
+            if (DirectMappedSimulation.isHit == 0) {
+                $("#set-0-tag-" + DirectMappedSimulation.index).addClass('highlight-more');
+            }
+
+            $("#set-0-valid-" + DirectMappedSimulation.index).text('1');
+            $("#set-0-tag-" + DirectMappedSimulation.index).text(response.cacheViewModel.tags[DirectMappedSimulation.index]);
+            $("#set-0-data-" + DirectMappedSimulation.index).text(response.cacheViewModel.cacheLines[DirectMappedSimulation.index].data.toString());
+            $("#set-0-dirty-" + DirectMappedSimulation.index).text(response.cacheViewModel.dirtyBit[DirectMappedSimulation.index]);
+
+            $("#set-0-data-" + DirectMappedSimulation.index).addClass('highlight-more');
+        }
+        if (response.isMemoryUpdated) {
+            $.notify("Updating memory", "success");
+
+            for (var indexInMemoryBlock = 0; indexInMemoryBlock < Simulation.cacheLineSize; indexInMemoryBlock++) {
+                $("#memory-" + (memoryAddress + indexInMemoryBlock)).addClass('highlight');
+                $("#memory-" + (memoryAddress + indexInMemoryBlock)).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[indexInMemoryBlock]);
+            }
+
+            $("#set-0-dirty-" + DirectMappedSimulation.index).text(0);
+        }
+    },
+
+    writeToMemory: function () {
+        $.ajax({
+            type: 'GET',
+            url: '/DirectMappedCacheSimulation/WriteToMemory',
+            success: function (response) {
+                DirectMappedSimulation.updateUIAfterWrite(response);
+            }
+        });
+    }
 } 

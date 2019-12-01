@@ -37,7 +37,7 @@ namespace CacheSimulator.ApplicationService
             Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
             Int32 blockIndex = address / cacheLineSizeInMemoryBlocks;
 
-             //check in functie de dirty bit
+            //check dirty bit => maybe on front-end => call a different method + another step
             CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
             CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
             CacheViewModel.CurrentMemoryAddress = blockIndex;
@@ -52,7 +52,7 @@ namespace CacheSimulator.ApplicationService
 
         private Int32 _GetCurrentIndex()
         {
-            var addressInBits = GetCurrentAddressInBits();  
+            var addressInBits = GetCurrentAddressInBits();
             return Convert.ToInt32(addressInBits.Substring(_GetTagSizeInBits(), _GetIndexSizeInBits()), 2);
         }
 
@@ -73,6 +73,26 @@ namespace CacheSimulator.ApplicationService
             return AddressSize - _GetIndexSizeInBits() - GetOffsetSizeInBits();
         }
 
+        public WriteOperationViewModel UpdateMemoryOnRead()
+        {
+            Int32 currentIndex = _GetCurrentIndex();
+            Int32 updatedMemoryBlock = CacheViewModel.UpdatedMemoryAddress[currentIndex];
+            Memory[updatedMemoryBlock] = CacheViewModel.CacheLines[currentIndex];
+
+            Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
+            CacheViewModel.CurrentMemoryAddress = CacheViewModel.UpdatedMemoryAddress[currentIndex] / cacheLineSizeInMemoryBlocks;
+            CacheViewModel.DirtyBit[currentIndex] = 0;
+
+            var updatedData = new WriteOperationViewModel();
+            updatedData.Memory = Memory;
+            updatedData.CacheViewModel = CacheViewModel;
+
+            updatedData.IsMemoryUpdated = true;
+
+            return updatedData;
+        }
+
+
         public WriteOperationViewModel WriteToMemory()
         {
             Int32 address = SimulationParameters.Operations[CurrentOperationIndex].Address;
@@ -84,7 +104,7 @@ namespace CacheSimulator.ApplicationService
 
             if (SimulationParameters.WritePolicy == WritePolicy.WriteThrough)
             {
-                if(SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate) //update cache and memory always
+                if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate) //update cache and memory always
                 {
                     //miss => update block in memory and bring it to the cache
                     if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTag())
@@ -137,15 +157,15 @@ namespace CacheSimulator.ApplicationService
                     }
                 }
             }
-            else if(SimulationParameters.WritePolicy == WritePolicy.WriteBack)
+            else if (SimulationParameters.WritePolicy == WritePolicy.WriteBack)
             {
-                if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate) 
+                if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate)
                 {
                     //miss => update block in memory and bring it to cache
                     if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTag())
                     {
                         Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-                        
+
                         CacheViewModel.Tags[currentIndex] = _GetCurrentTag();
                         CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
 
@@ -166,7 +186,7 @@ namespace CacheSimulator.ApplicationService
                         updatedData.IsCacheUpdated = true;
                     }
                 }
-                else if(SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
+                else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
                 {
                     //miss => update memory but don't bring it to cache
                     if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTag())
@@ -191,4 +211,6 @@ namespace CacheSimulator.ApplicationService
             return updatedData;
         }
     }
+
+
 }

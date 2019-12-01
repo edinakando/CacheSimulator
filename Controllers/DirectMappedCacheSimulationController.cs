@@ -54,5 +54,12 @@ namespace CacheSimulator.Controllers
         {
             return Json(_applicationService.WriteToMemory());
         }
+
+        [HttpGet]
+        public IActionResult UpdateMemoryOnRead()
+        {
+            return Json(_applicationService.UpdateMemoryOnRead());
+        }
+
     }
 }
