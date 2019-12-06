@@ -125,42 +125,21 @@
         else if (this.instructionType == "read" && this.isComparingTags) {
             FullyAssociativeSimulation.removeAllHighlightFromCache();
 
-            if (this.currentStep == 6) {
-                if (this.isHit) {
-                    $.notify("Checking dirty bit", "success");
-                    $("#set-0-dirty-" + FullyAssociativeSimulation.cacheIndexToBeReplaced).addClass('highlight');
-                }
-                else {
-                    FullyAssociativeSimulation.findCacheIndexToBeReplaced();
-                }
+            if (this.currentStep == 6 && this.isHit == 0) {
+                FullyAssociativeSimulation.findCacheIndexToBeReplaced();
             }
-            else if (this.currentStep == 7) {
-                if (this.isHit) {
-                    FullyAssociativeSimulation.checkDirtyBit();
-                }
-                else {
-                    $.notify("Checking dirty bit", "success");
-                    $("#set-0-dirty-" + FullyAssociativeSimulation.cacheIndexToBeReplaced).addClass('highlight');
-                }
+            else if (this.currentStep == 7 && this.isHit == 0) {
+                $.notify("Checking dirty bit", "success");
+                $("#set-0-dirty-" + FullyAssociativeSimulation.cacheIndexToBeReplaced).addClass('highlight');
             }
-            else if (this.currentStep == 8) {
-                if (this.isHit) {
-                    FullyAssociativeSimulation.updateCache();
-                }
-                else {
-                    FullyAssociativeSimulation.checkDirtyBit();
-                }
+            else if (this.currentStep == 8 && this.isHit == 0) {
+                FullyAssociativeSimulation.checkDirtyBit();
             }
-            else if (this.currentStep == 9) {
-                if (this.isHit) {
-                    Simulation.updateButtons();
-                }
-                else {
-                    FullyAssociativeSimulation.updateCache();
-                }
+            else if (this.currentStep == 9 && this.isHit == 0) {
+                FullyAssociativeSimulation.updateCache();
             }
             else {
-                Simulation.updateUpdateButtons();
+                Simulation.updateButtons();
             }
         }
         else if (this.instructionType == "write") {
