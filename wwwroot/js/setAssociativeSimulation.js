@@ -9,8 +9,16 @@
     lastUpdatedSet: 0,
     isComparingTags: 0,
     isHit: 0,
+    instructionType: "",
+    operations: [],
+    cacheIndexToBeReplaced : 0,
+    cacheSetToBeReplaced: 0,
+    isCheckingDirtyBit: 0,
 
     startSimulation: function (simulationParameters) {
+        this.operations = simulationParameters.Operations;
+        this.instructionType = this.operations[this.currentInstruction].Type;
+
         $.ajax({
             type: "POST",
             async: false,
@@ -60,10 +68,10 @@
                 for (var set = 0; set < this.validBlocks.length; set++) {
                     $("#set-" + this.validBlocks[set] + "-valid-" + this.index).removeClass('highlight-more');
                     $("#set-" + this.validBlocks[set] + "-tag-" + this.index).addClass('highlight-more');
-                    this.isComparingTags = 1;
                 }
+                this.isComparingTags = 1;
             }
-            else{
+            else {
                 $.notify("No valid blocks found => Cache MISS", "error");
                 for (var set = 0; set < this.setCount; set++) {
                     $("#set-" + set + "-valid-" + this.index).addClass('highlight-red');
@@ -100,9 +108,12 @@
                     }
                 }
             }
-            else {
+            else { //was cache miss
                 SetAssociativeSimulation.removeAllHighlightFromCache();
-                SetAssociativeSimulation.updateCache();
+
+                SetAssociativeSimulation.findCacheIndexToBeReplaced();
+                $("#set-" + this.cacheSetToBeReplaced + "-cacheRow-" + this.cacheIndexToBeReplaced).addClass('highlight')
+                this.isCheckingDirtyBit = 1;
             }
         }
         else if (this.currentStep == 6) {
@@ -110,9 +121,37 @@
                 Simulation.updateButtons();
             }
             else {
-                SetAssociativeSimulation.removeAllHighlightFromCache();
+                if (this.isCheckingDirtyBit) {
+                    SetAssociativeSimulation.checkDirtyBit();
+                }
+                else {
+                    SetAssociativeSimulation.removeAllHighlightFromCache();
+
+                    SetAssociativeSimulation.findCacheIndexToBeReplaced();
+                    $("#set-" + this.cacheSetToBeReplaced + "-cacheRow-" + this.cacheIndexToBeReplaced).addClass('highlight')
+                    this.isCheckingDirtyBit = 1;
+                }
+            }
+        }
+        else if (this.currentStep == 7) {
+            if (this.isCheckingDirtyBit) {
+                SetAssociativeSimulation.checkDirtyBit();
+            }
+            else {
+                if (this.instructionType == "read") {
+                    SetAssociativeSimulation.updateCache();
+                }
+                else {
+                    SetAssociativeSimulation.writeToMemory();
+                }
+            }
+        }
+        else if (this.currentStep == 8) {
+            if (this.instructionType == "read") {
+                $.notify("Updating Cache", "success");
                 SetAssociativeSimulation.updateCache();
             }
+            Simulation.updateButtons();
         }
     },
 
@@ -173,6 +212,9 @@
         this.currentStep = 0;
         this.currentInstruction++;
 
+        this.instructionType = this.operations[this.currentInstruction].Type;
+
+
         $("#nextStepButton").attr("hidden", false);
         $("#nextInstructionButton").attr("hidden", true);
 
@@ -186,9 +228,12 @@
 
         Simulation.highlightCurrentInstruction(this.currentInstruction);
 
+        this.cacheSetToBeReplaced = 0;
+        this.cacheIndexToBeReplaced = 0;
         this.existValidBlocks = 0;
         this.isComparingTags = 0;
         this.isHit = 0;
+        this.isCheckingDirtyBit = 0;
 
         $.ajax({
             type: 'POST',
@@ -204,5 +249,31 @@
             url: "/SetAssociativeCacheSimulation/Reset"
         });
     },
-    
+
+    findCacheIndexToBeReplaced: function () {
+        $.notify("Finding cache index from set to be replaced", "success");
+        $.ajax({
+            type: 'GET',
+            async: false,
+            url: '/SetAssociativeCacheSimulation/GetCacheLineToBeReplaced',
+            success: function (response) {
+                SetAssociativeSimulation.cacheIndexToBeReplaced = response.index;
+                SetAssociativeSimulation.cacheSetToBeReplaced = response.set;
+            }
+        });
+    },
+
+    checkDirtyBit: function () {
+        var dirtyBit = $("#set-" + this.cacheIndexToBeReplaced + "-dirty-" + this.cacheSetToBeReplaced).text();
+
+        if (dirtyBit == 1) {
+            $.notify("Dirty bit is 1 => update memory", "success");
+            SetAssociativeSimulation.updateMemory();
+        }
+        else {
+            $.notify("Dirty bit is 0", "success");
+        }
+
+        this.isCheckingDirtyBit = 0;
+    }
 }

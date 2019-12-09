@@ -58,5 +58,23 @@ namespace CacheSimulator.Controllers
         {
             _applicationService.UpdateStatistics(index, set);
         }
+
+        [HttpGet]
+        public IActionResult WriteToMemory(Int32 index)
+        {
+            return Json(_applicationService.WriteToMemory(index));
+        }
+
+        [HttpGet]
+        public IActionResult GetCacheLineToBeReplaced()
+        {
+            return Json(_applicationService.GetCacheLineToBeReplaced());
+        }
+
+        [HttpGet]
+        public IActionResult UpdateMemory(Int32 currentIndex)
+        {
+            return Json(_applicationService.UpdateMemory(currentIndex));
+        }
     }
 }
