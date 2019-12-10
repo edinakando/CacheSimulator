@@ -60,9 +60,9 @@ namespace CacheSimulator.Controllers
         }
 
         [HttpGet]
-        public IActionResult WriteToMemory(Int32 index)
+        public IActionResult WriteToMemory(Int32 index, Int32 set)
         {
-            return Json(_applicationService.WriteToMemory(index));
+            return Json(_applicationService.WriteToMemory(index, set));
         }
 
         [HttpGet]
@@ -72,9 +72,9 @@ namespace CacheSimulator.Controllers
         }
 
         [HttpGet]
-        public IActionResult UpdateMemory(Int32 currentIndex)
+        public IActionResult UpdateMemory(Int32 index, Int32 set)
         {
-            return Json(_applicationService.UpdateMemory(currentIndex));
+            return Json(_applicationService.UpdateMemory(index, set));
         }
     }
 }

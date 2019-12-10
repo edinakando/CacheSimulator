@@ -11,7 +11,7 @@
     isHit: 0,
     instructionType: "",
     operations: [],
-    cacheIndexToBeReplaced : 0,
+    cacheIndexToBeReplaced: 0,
     cacheSetToBeReplaced: 0,
     isCheckingDirtyBit: 0,
 
@@ -79,7 +79,7 @@
             }
         }
         else if (this.currentStep == 5) {
-            if (this.isComparingTags) {
+             if (this.isComparingTags) {
                 for (var set = 0; set < this.validBlocks.length; set++) {
                     if ($("#set-" + this.validBlocks[set] + "-tag-" + this.index).text() == $("#tagValue").text()) {
                         $.notify("Equal tags found => Cache HIT", "success");
@@ -111,33 +111,6 @@
             else { //was cache miss
                 SetAssociativeSimulation.removeAllHighlightFromCache();
 
-                SetAssociativeSimulation.findCacheIndexToBeReplaced();
-                $("#set-" + this.cacheSetToBeReplaced + "-cacheRow-" + this.cacheIndexToBeReplaced).addClass('highlight')
-                this.isCheckingDirtyBit = 1;
-            }
-        }
-        else if (this.currentStep == 6) {
-            if (this.isHit) {
-                Simulation.updateButtons();
-            }
-            else {
-                if (this.isCheckingDirtyBit) {
-                    SetAssociativeSimulation.checkDirtyBit();
-                }
-                else {
-                    SetAssociativeSimulation.removeAllHighlightFromCache();
-
-                    SetAssociativeSimulation.findCacheIndexToBeReplaced();
-                    $("#set-" + this.cacheSetToBeReplaced + "-cacheRow-" + this.cacheIndexToBeReplaced).addClass('highlight')
-                    this.isCheckingDirtyBit = 1;
-                }
-            }
-        }
-        else if (this.currentStep == 7) {
-            if (this.isCheckingDirtyBit) {
-                SetAssociativeSimulation.checkDirtyBit();
-            }
-            else {
                 if (this.instructionType == "read") {
                     SetAssociativeSimulation.updateCache();
                 }
@@ -146,11 +119,58 @@
                 }
             }
         }
-        else if (this.currentStep == 8) {
-            if (this.instructionType == "read") {
-                $.notify("Updating Cache", "success");
+        else if (this.instructionType == "read" && this.isComparingTags) {
+            SetAssociativeSimulation.removeAllHighlightFromCache();
+
+            if (this.currentStep == 6 && this.isHit == 0) {
+                SetAssociativeSimulation.findCacheIndexToBeReplaced();
+            }
+            else if (this.currentStep == 7 && this.isHit == 0) {
+                $.notify("Checking dirty bit", "success");
+                $("#set-" + this.cacheSetToBeReplaced + "-dirty-" + this.cacheIndexToBeReplaced).addClass("highlight");
+            }
+            else if (this.currentStep == 8 && this.isHit == 0) {
+                SetAssociativeSimulation.checkDirtyBit();
+            }
+            else if (this.currentStep == 9 && this.isHit == 0) {
                 SetAssociativeSimulation.updateCache();
             }
+            else {
+                Simulation.updateButtons();
+            }
+        }
+        else if (this.instructionType == "write") {
+            SetAssociativeSimulation.removeAllHighlightFromCache();
+
+            if (this.currentStep == 6) {
+                if (this.isHit) {
+                    //SetAssociativeSimulation.findCacheIndexToBeReplaced();
+                    SetAssociativeSimulation.writeToMemory();
+                }
+                else {
+                    SetAssociativeSimulation.findCacheIndexToBeReplaced();
+                }
+            }
+            else if (this.currentStep == 7) {
+                if (this.isHit) {
+                    Simulation.updateButtons();
+                }
+                else {
+                    $.notify("Checking dirty bit", "success");
+                    $("#set-" + this.cacheSetToBeReplaced + "-dirty-" + this.cacheIndexToBeReplaced).addClass("highlight");
+                }
+            }
+            else if (this.currentStep == 8) {
+                SetAssociativeSimulation.checkDirtyBit();
+            }
+            else if (this.currentStep == 9) {
+                SetAssociativeSimulation.writeToMemory();
+            }
+            else {
+                Simulation.updateButtons();
+            }
+        }
+        else {
             Simulation.updateButtons();
         }
     },
@@ -177,6 +197,7 @@
                 $("#set-" + set + "-cacheRow-" + cacheLine).removeAttr('class');
                 $("#set-" + set + "-tag-" + cacheLine).removeAttr('class');
                 $("#set-" + set + "-valid-" + cacheLine).removeAttr('class');
+                $("#set-" + set + "-data-" + cacheLine).removeAttr('class');
             }
         }
     },
@@ -187,6 +208,7 @@
             url: 'SetAssociativeCacheSimulation/UpdateCache',
             async: false,
             success: function (response) {
+                var a = 5;
                 $.notify(response.cache[response.lastUpdatedSet].cacheUpdateTypeMessage, "success");
                 var lastUpdatedCacheLine = SetAssociativeSimulation.index;
                 var cache = response.cache[response.lastUpdatedSet];
@@ -204,11 +226,17 @@
                 }
 
                 Simulation.updateButtons();
+            },
+            error: function (response) {
+                console.log(response);
+                var a = 7;
             }
         });
     },
 
     nextInstruction: function () {
+        SetAssociativeSimulation.removeAllHighlightFromCache();
+
         this.currentStep = 0;
         this.currentInstruction++;
 
@@ -228,8 +256,6 @@
 
         Simulation.highlightCurrentInstruction(this.currentInstruction);
 
-        this.cacheSetToBeReplaced = 0;
-        this.cacheIndexToBeReplaced = 0;
         this.existValidBlocks = 0;
         this.isComparingTags = 0;
         this.isHit = 0;
@@ -264,7 +290,7 @@
     },
 
     checkDirtyBit: function () {
-        var dirtyBit = $("#set-" + this.cacheIndexToBeReplaced + "-dirty-" + this.cacheSetToBeReplaced).text();
+        var dirtyBit = $("#set-" + this.cacheSetToBeReplaced + "-dirty-" + this.cacheIndexToBeReplaced).text();
 
         if (dirtyBit == 1) {
             $.notify("Dirty bit is 1 => update memory", "success");
@@ -275,5 +301,69 @@
         }
 
         this.isCheckingDirtyBit = 0;
-    }
+    },
+
+    writeToMemory: function () {
+        $.ajax({
+            type: 'GET',
+            async: false,
+            url: '/SetAssociativeCacheSimulation/WriteToMemory',
+            data: {
+                index: SetAssociativeSimulation.cacheIndexToBeReplaced,
+                set: SetAssociativeSimulation.cacheSetToBeReplaced
+            },
+            success: function (response) {
+                SetAssociativeSimulation.updateUIAfterWrite(response);
+            }
+        });
+
+        Simulation.updateButtons();
+    },
+
+    updateUIAfterWrite: function (response) {
+        Simulation.currentMemoryAddress = response.cacheViewModel.currentMemoryAddress * Simulation.cacheLineSize;
+        var memoryAddress = Simulation.currentMemoryAddress; //+ response.updatedPlaceInMemoryBlock;
+        var cacheIndex = SetAssociativeSimulation.cacheIndexToBeReplaced;
+        var cacheSet = SetAssociativeSimulation.cacheSetToBeReplaced;
+
+        if (response.isCacheUpdated) {
+            $.notify("Updating cache", "success");
+
+            if (FullyAssociativeSimulation.isHit == 0) {
+                $("#set-" + cacheSet + "-tag-" + cacheIndex).addClass('highlight-more');
+            }
+
+            $("#set-" + cacheSet + "-valid-" + cacheIndex).text('1');
+            $("#set-" + cacheSet + "-tag-" + cacheIndex).text(response.cacheViewModel.tags[cacheIndex]);
+            $("#set-" + cacheSet + "-data-" + cacheIndex).text(response.cacheViewModel.cacheLines[cacheIndex].data.toString());
+            $("#set-" + cacheSet + "-dirty-" + cacheIndex).text(response.cacheViewModel.dirtyBit[cacheIndex]);
+
+            $("#set-" + cacheSet + "-data-" + cacheIndex).addClass('highlight-more');
+        }
+        if (response.isMemoryUpdated) {
+            $.notify("Updating memory", "success");
+
+            for (var indexInMemoryBlock = 0; indexInMemoryBlock < Simulation.cacheLineSize; indexInMemoryBlock++) {
+                $("#memory-" + (memoryAddress + indexInMemoryBlock)).addClass('highlight');
+                $("#memory-" + (memoryAddress + indexInMemoryBlock)).text(response.memory[response.cacheViewModel.currentMemoryAddress].data[indexInMemoryBlock]);
+            }
+
+            $("#set-" + this.cacheSetToBeReplaced + "-dirty-" + cacheIndex).text(0);
+        }
+    },
+
+    updateMemory: function () {
+        $.ajax({
+            type: 'GET',
+            async: false,
+            url: '/SetAssociativeCacheSimulation/UpdateMemory',
+            data: {
+                index: SetAssociativeSimulation.cacheIndexToBeReplaced,
+                set: SetAssociativeSimulation.cacheSetToBeReplaced
+            },
+            success: function (response) {
+                SetAssociativeSimulation.updateUIAfterWrite(response);
+            }
+        });
+    },
 }

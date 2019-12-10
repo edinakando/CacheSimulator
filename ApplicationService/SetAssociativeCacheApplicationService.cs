@@ -9,6 +9,7 @@ namespace CacheSimulator.ApplicationService
     {
         public static IDictionary<Int32, IList<Int32>> CacheLineFrequencies { get; set; } //pentru fiecare index - seturile
         public static IDictionary<Int32, IList<Int32>> CacheLineLastUsageTimes { get; set; }
+        public static IDictionary<Int32, IList<Int32>> UpdatedMemoryAddress { get; set; }
         public static List<KeyValuePair<Int32, Int32>> Fifo { get; set; }
         public new static SetAssociativeCacheViewModel CacheViewModel { get; set; }
 
@@ -21,11 +22,14 @@ namespace CacheSimulator.ApplicationService
 
             CacheLineFrequencies = new Dictionary<Int32, IList<Int32>>();
             CacheLineLastUsageTimes = new Dictionary<Int32, IList<Int32>>();
-           
-            for(var set = 0; set < SimulationParameters.SetCount; set++)
+            UpdatedMemoryAddress = new Dictionary<Int32, IList<Int32>>();
+
+            for (var set = 0; set < SimulationParameters.SetCount; set++)
             {
                 CacheLineFrequencies.Add(set, new List<Int32>(new Int32[IndexCount]));
                 CacheLineLastUsageTimes.Add(set, new List<Int32>(new Int32[IndexCount]));
+                UpdatedMemoryAddress.Add(set, new List<Int32>(new Int32[IndexCount]));
+
             }
             Fifo = new List<KeyValuePair<Int32, Int32>>();
         }
@@ -79,15 +83,15 @@ namespace CacheSimulator.ApplicationService
 
             if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LFU)
             {
-                CacheViewModel.Cache[cacheLine].CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
+                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
             }
             else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LRU)
             {
-                CacheViewModel.Cache[cacheLine].CacheUpdateTypeMessage = "Copying data to least recently used cache line.";
+                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to least recently used cache line.";
             }
             else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.FIFO)
             {
-                CacheViewModel.Cache[Fifo[0].Key].CacheUpdateTypeMessage = "Copying data to first cache line updated.";
+                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to first cache line updated.";
                 Fifo.RemoveAt(0);
             }
 
@@ -136,124 +140,123 @@ namespace CacheSimulator.ApplicationService
             CacheLineLastUsageTimes[currentSet][currentIndex] = ++mostRecentTime;
         }
 
-        public WriteOperationViewModel WriteToMemory(Int32 currentIndex)
+        public WriteOperationViewModel WriteToMemory(Int32 currentIndex, Int32 currentSet)
         {
-            //Int32 address = SimulationParameters.Operations[CurrentOperationIndex].Address;
-            //Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
-            //Int32 blockIndex = address / cacheLineSizeInMemoryBlocks;
-            //String newData = SimulationParameters.Operations[CurrentOperationIndex].Data;
-            //var updatedData = new WriteOperationViewModel();
+            Int32 address = SimulationParameters.Operations[CurrentOperationIndex].Address;
+            Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
+            Int32 blockIndex = address / cacheLineSizeInMemoryBlocks;
+            String newData = SimulationParameters.Operations[CurrentOperationIndex].Data;
+            var updatedData = new WriteOperationViewModel();
+          
+            UpdateStatistics(currentIndex);
 
-            //UpdateStatistics(currentIndex);
+            if (SimulationParameters.WritePolicy == WritePolicy.WriteThrough)
+            {
+                if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate) //update cache and memory always
+                {
+                    //miss => update block in memory and bring it to the cache
+                    if (CacheViewModel.Cache[currentSet].Tags == null || CacheViewModel.Cache[currentSet].Tags[currentIndex] != _GetCurrentTagInBits())
+                    {
+                        Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
 
-            //if (SimulationParameters.WritePolicy == WritePolicy.WriteThrough)
-            //{
-            //    if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate) //update cache and memory always
-            //    {
-            //        //miss => update block in memory and bring it to the cache
-            //        if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTagInBits())
-            //        {
-            //            Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                        CacheViewModel.Cache[currentSet].Tags[currentIndex] = _GetCurrentTagInBits();
+                        CacheViewModel.Cache[currentSet].CacheLines[currentIndex] = Memory[blockIndex];
+                        CacheViewModel.Cache[currentSet].CurrentMemoryAddress = blockIndex;
 
-            //            CacheViewModel.Tags[currentIndex] = _GetCurrentTagInBits();
-            //            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
-            //            CacheViewModel.CurrentMemoryAddress = blockIndex;
+                        updatedData.IsCacheUpdated = true;
+                        updatedData.IsMemoryUpdated = true;
+                    }
+                    else
+                    {
+                        //hit => write to cache and memory
+                        Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
 
-            //            updatedData.IsCacheUpdated = true;
-            //            updatedData.IsMemoryUpdated = true;
-            //        }
-            //        else
-            //        {
-            //            //hit => write to cache and memory
-            //            Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                        CacheViewModel.Cache[currentSet].CacheLines[currentIndex] = Memory[blockIndex];
+                        CacheViewModel.Cache[currentSet].CurrentMemoryAddress = blockIndex;
 
-            //            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
-            //            CacheViewModel.CurrentMemoryAddress = blockIndex;
+                        updatedData.IsCacheUpdated = true;
+                        updatedData.IsMemoryUpdated = true;
+                    }
+                }
+                else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
+                {
+                    //miss => update block in memory, not bringing it to the cache
+                    if (CacheViewModel.Cache[currentSet].Tags == null || CacheViewModel.Cache[currentSet].Tags[currentIndex] != _GetCurrentTagInBits())
+                    {
+                        Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                        updatedData.IsMemoryUpdated = true;
+                        CacheViewModel.Cache[currentSet].CurrentMemoryAddress = blockIndex;
+                    }
+                    else
+                    {
+                        //hit => write to cache and memory
+                        Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
 
-            //            updatedData.IsCacheUpdated = true;
-            //            updatedData.IsMemoryUpdated = true;
-            //        }
-            //    }
-            //    else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
-            //    {
-            //        //miss => update block in memory, not bringing it to the cache
-            //        if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTagInBits())
-            //        {
-            //            Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
-            //            updatedData.IsMemoryUpdated = true;
-            //            CacheViewModel.CurrentMemoryAddress = blockIndex;
-            //        }
-            //        else
-            //        {
-            //            //hit => write to cache and memory
-            //            Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                        CacheViewModel.Cache[currentSet].Tags[currentIndex] = _GetCurrentTagInBits();
+                        CacheViewModel.Cache[currentSet].CacheLines[currentIndex] = Memory[blockIndex];
+                        CacheViewModel.Cache[currentSet].CurrentMemoryAddress = blockIndex;
 
-            //            CacheViewModel.Tags[currentIndex] = _GetCurrentTagInBits();
-            //            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
-            //            CacheViewModel.CurrentMemoryAddress = blockIndex;
+                        updatedData.IsCacheUpdated = true;
+                        updatedData.IsMemoryUpdated = true;
+                    }
+                }
+            }
+            else if (SimulationParameters.WritePolicy == WritePolicy.WriteBack)
+            {
+                if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate)
+                {
+                    //miss => update block in memory and bring it to cache
+                    if (CacheViewModel.Cache[currentSet].Tags == null || CacheViewModel.Cache[currentSet].Tags[currentIndex] != _GetCurrentTagInBits())
+                    {
+                        Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
 
-            //            updatedData.IsCacheUpdated = true;
-            //            updatedData.IsMemoryUpdated = true;
-            //        }
-            //    }
-            //}
-            //else if (SimulationParameters.WritePolicy == WritePolicy.WriteBack)
-            //{
-            //    if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteAllocate)
-            //    {
-            //        //miss => update block in memory and bring it to cache
-            //        if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTagInBits())
-            //        {
-            //            Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        CacheViewModel.Cache[currentSet].Tags[currentIndex] = _GetCurrentTagInBits();
+                        CacheViewModel.Cache[currentSet].CacheLines[currentIndex] = Memory[blockIndex];
 
-            //            CacheViewModel.Tags[currentIndex] = _GetCurrentTagInBits();
-            //            CacheViewModel.CacheLines[currentIndex] = Memory[blockIndex];
+                        CacheViewModel.Cache[currentSet].CurrentMemoryAddress = blockIndex;
+                        CacheViewModel.Cache[currentSet].UpdatedMemoryAddress[currentIndex] = address;
 
-            //            CacheViewModel.CurrentMemoryAddress = blockIndex;
-            //            CacheViewModel.UpdatedMemoryAddress[currentIndex] = address;
+                        CacheViewModel.Cache[currentSet].DirtyBit[currentIndex] = 0;
 
-            //            CacheViewModel.DirtyBit[currentIndex] = 0;
+                        updatedData.IsCacheUpdated = true;
+                        updatedData.IsMemoryUpdated = true;
+                        updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                    }
+                    else //hit => write to cache, set dirty bit, NO write to memory
+                    {
+                        CacheViewModel.Cache[currentSet].CacheLines[currentIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        CacheViewModel.Cache[currentSet].DirtyBit[currentIndex] = 1;
+                        CacheViewModel.Cache[currentSet].UpdatedMemoryAddress[currentIndex] = address;
+                        updatedData.IsCacheUpdated = true;
+                    }
+                }
+                else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
+                {
+                    //miss => update memory but don't bring it to cache
+                    if (CacheViewModel.Cache[currentSet].Tags == null || CacheViewModel.Cache[currentSet].Tags[currentIndex] != _GetCurrentTagInBits())
+                    {
+                        Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        CacheViewModel.Cache[currentSet].CurrentMemoryAddress = blockIndex;
+                        updatedData.IsMemoryUpdated = true;
+                        updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
+                    }
+                    else //hit => write to cache, set dirty bit, NO write to memory
+                    {
+                        CacheViewModel.Cache[currentSet].CacheLines[currentIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
+                        CacheViewModel.Cache[currentSet].DirtyBit[currentIndex] = 1;
+                        CacheViewModel.Cache[currentSet].UpdatedMemoryAddress[currentIndex] = address;
+                        updatedData.IsCacheUpdated = true;
+                    }
+                }
+            }
 
-            //            updatedData.IsCacheUpdated = true;
-            //            updatedData.IsMemoryUpdated = true;
-            //            updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
-            //        }
-            //        else //hit => write to cache, set dirty bit, NO write to memory
-            //        {
-            //            CacheViewModel.CacheLines[currentIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            CacheViewModel.DirtyBit[currentIndex] = 1;
-            //            CacheViewModel.UpdatedMemoryAddress[currentIndex] = address;
-            //            updatedData.IsCacheUpdated = true;
-            //        }
-            //    }
-            //    else if (SimulationParameters.WritePolicyAllocate == WritePolicyAllocate.WriteNoAllocate)
-            //    {
-            //        //miss => update memory but don't bring it to cache
-            //        if (CacheViewModel.Tags == null || CacheViewModel.Tags[currentIndex] != _GetCurrentTagInBits())
-            //        {
-            //            Memory[blockIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            CacheViewModel.CurrentMemoryAddress = blockIndex;
-            //            updatedData.IsMemoryUpdated = true;
-            //            updatedData.UpdatedPlaceInMemoryBlock = address % cacheLineSizeInMemoryBlocks;
-            //        }
-            //        else //hit => write to cache, set dirty bit, NO write to memory
-            //        {
-            //            CacheViewModel.CacheLines[currentIndex].Data[address % cacheLineSizeInMemoryBlocks] = newData;
-            //            CacheViewModel.DirtyBit[currentIndex] = 1;
-            //            CacheViewModel.UpdatedMemoryAddress[currentIndex] = address;
-            //            updatedData.IsCacheUpdated = true;
-            //        }
-            //    }
-            //}
-
-            //updatedData.CacheViewModel = CacheViewModel;
-            //updatedData.Memory = Memory;
-            //return updatedData;
-            return null;
+            updatedData.CacheViewModel = CacheViewModel.Cache[currentSet];
+            updatedData.Memory = Memory;
+            return updatedData;
         }
 
         public SetAssociativeCacheLineViewModel GetCacheLineToBeReplaced()
@@ -325,25 +328,22 @@ namespace CacheSimulator.ApplicationService
             };
         }
 
-        public WriteOperationViewModel UpdateMemory(Int32 currentIndex)
+        public WriteOperationViewModel UpdateMemory(Int32 index, Int32 set)
         {
-        //Int32 updatedMemoryBlock = CacheViewModel.UpdatedMemoryAddress[currentIndex];
-        //Memory[updatedMemoryBlock] = CacheViewModel.CacheLines[currentIndex];
+            Int32 updatedMemoryBlock = UpdatedMemoryAddress[set][index];
+            Memory[updatedMemoryBlock] = CacheViewModel.Cache[set].CacheLines[index];
 
-        //Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
-        //CacheViewModel.CurrentMemoryAddress = CacheViewModel.UpdatedMemoryAddress[currentIndex] / cacheLineSizeInMemoryBlocks;
-        //CacheViewModel.DirtyBit[currentIndex] = 0;
+            Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
+            CacheViewModel.Cache[set].CurrentMemoryAddress = UpdatedMemoryAddress[set][index] / cacheLineSizeInMemoryBlocks;
+            CacheViewModel.Cache[set].DirtyBit[index] = 0;
 
-        //var updatedData = new WriteOperationViewModel();
-        //updatedData.Memory = Memory;
-        //updatedData.CacheViewModel = CacheViewModel;
+            var updatedData = new WriteOperationViewModel();
+            updatedData.Memory = Memory;
+            updatedData.CacheViewModel = CacheViewModel.Cache[set];
 
-        //updatedData.IsMemoryUpdated = true;
+            updatedData.IsMemoryUpdated = true;
 
-        //return updatedData;
-        return null;
+            return updatedData;
         }
     }
-
-   
 }

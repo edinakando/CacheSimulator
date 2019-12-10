@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CacheSimulator.ViewModels
 {
@@ -9,8 +7,7 @@ namespace CacheSimulator.ViewModels
     {
         public IList<CacheViewModel> Cache { get; set; }
         public Int32 LastUpdatedSet { get; set; }
-
-
+        public Int32 UpdatedMemoryAddress { get; set; }
         public SetAssociativeCacheViewModel(Int32 setCount, Int32 indexCount)
         {
             Cache = new List<CacheViewModel>();
@@ -19,7 +16,6 @@ namespace CacheSimulator.ViewModels
             {
                 Cache.Add(new CacheViewModel(indexCount));
             }
-
         }
     }
 }
