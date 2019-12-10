@@ -67,36 +67,41 @@ namespace CacheSimulator.ApplicationService
         public SetAssociativeCacheViewModel UpdateCache()
         {
             Boolean isFull = true;
-            Int32 cacheLine = _GetCurrentIndex();  //asta e de fapt setul
-
+            Int32 cacheLine = _GetCurrentIndex();  //asta e de fapt setul            
             SetAssociativeCacheLineViewModel cacheLineToBeReplaced = GetCacheLineToBeReplaced();
-           
+
             for (var set = 0; set < SimulationParameters.SetCount; set++)
             {
                 if (CacheViewModel.Cache[set].CacheLines[cacheLine] == null)
                 {
-                    CacheViewModel.Cache[set].CacheUpdateTypeMessage = "Copying data to an unused cache line.";
                     isFull = false;
                     break;
                 }
             }
 
-            if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LFU)
+            if (isFull)
             {
-                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
+                if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LFU)
+                {
+                    CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to least frequently used cache line.";
+                }
+                else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LRU)
+                {
+                    CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to least recently used cache line.";
+                }
+                else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.FIFO)
+                {
+                    CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to first cache line updated.";
+                    Fifo.RemoveAt(0);
+                }
             }
-            else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.LRU)
+            else
             {
-                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to least recently used cache line.";
-            }
-            else if (isFull && SimulationParameters.ReplacementAlgorithm == ReplacementAlgorithm.FIFO)
-            {
-                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to first cache line updated.";
-                Fifo.RemoveAt(0);
+                //Fifo.Add(cacheLineToBeReplaced.Set, cacheLineToBeReplaced.Index);
+                CacheViewModel.Cache[cacheLineToBeReplaced.Set].CacheUpdateTypeMessage = "Copying data to an unused cache line.";
             }
 
             _PlaceDataAtIndex(cacheLineToBeReplaced.Index, cacheLineToBeReplaced.Set);
-            UpdateStatistics(cacheLineToBeReplaced.Set, cacheLineToBeReplaced.Index);
             CacheViewModel.LastUpdatedSet = cacheLineToBeReplaced.Set;
 
             return CacheViewModel;
@@ -117,14 +122,21 @@ namespace CacheSimulator.ApplicationService
             Int32 address = SimulationParameters.Operations[CurrentOperationIndex].Address;
             Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
             Int32 blockIndex = address / cacheLineSizeInMemoryBlocks;
+            
+            if (CacheViewModel.Cache[set].DirtyBit[currentIndex] == 1)
+            {
+                WriteToMemory(currentIndex, set);
+            }
 
             CacheViewModel.Cache[set].Tags[currentIndex] = _GetCurrentTagInBits();
             CacheViewModel.Cache[set].CacheLines[currentIndex] = Memory[blockIndex];
             CacheViewModel.Cache[set].CurrentMemoryAddress = blockIndex;
             CacheViewModel.Cache[set].LastUpdatedIndex = currentIndex;
+
+            UpdateStatistics(set, currentIndex);
         }
 
-        public void UpdateStatistics(Int32 currentIndex, Int32 currentSet = 0) //to be done
+        public void UpdateStatistics(Int32 currentIndex, Int32 currentSet) //to be done
         {
             CacheLineFrequencies[currentSet][currentIndex]++;
 
@@ -148,7 +160,7 @@ namespace CacheSimulator.ApplicationService
             String newData = SimulationParameters.Operations[CurrentOperationIndex].Data;
             var updatedData = new WriteOperationViewModel();
           
-            UpdateStatistics(currentIndex);
+            UpdateStatistics(currentSet, currentIndex);
 
             if (SimulationParameters.WritePolicy == WritePolicy.WriteThrough)
             {
@@ -270,7 +282,6 @@ namespace CacheSimulator.ApplicationService
             {
                 if (CacheViewModel.Cache[set].CacheLines[cacheLine] == null)
                 {
-                    CacheViewModel.LastUpdatedSet = set;
                     Fifo.Add(new KeyValuePair<int, int>(cacheLine, set));
                     isFull = false;
                     setCount = set;
@@ -330,11 +341,11 @@ namespace CacheSimulator.ApplicationService
 
         public WriteOperationViewModel UpdateMemory(Int32 index, Int32 set)
         {
-            Int32 updatedMemoryBlock = UpdatedMemoryAddress[set][index];
+            Int32 updatedMemoryBlock = CacheViewModel.Cache[set].UpdatedMemoryAddress[index];
             Memory[updatedMemoryBlock] = CacheViewModel.Cache[set].CacheLines[index];
 
             Int32 cacheLineSizeInMemoryBlocks = SimulationParameters.DataSize / MemoryDataSize; //4
-            CacheViewModel.Cache[set].CurrentMemoryAddress = UpdatedMemoryAddress[set][index] / cacheLineSizeInMemoryBlocks;
+            CacheViewModel.Cache[set].CurrentMemoryAddress = updatedMemoryBlock / cacheLineSizeInMemoryBlocks;
             CacheViewModel.Cache[set].DirtyBit[index] = 0;
 
             var updatedData = new WriteOperationViewModel();

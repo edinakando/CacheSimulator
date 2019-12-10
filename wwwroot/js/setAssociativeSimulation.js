@@ -87,13 +87,14 @@
                         $("#set-" + this.validBlocks[set] + "-cacheRow-" + this.index).addClass('highlight-hit');
                         this.isHit = 1;
 
+                        this.cacheSetToBeReplaced = this.validBlocks[set];
                         $.ajax({
                             type: 'POST',
                             async: false,
                             url: '/SetAssociativeCacheSimulation/CacheHit',
                             data: {
-                                index: this.validBlocks[set],
-                                set: this.index
+                                index: SetAssociativeSimulation.index,
+                                set: SetAssociativeSimulation.validBlocks[set]
                             }
                         });
                         break;
@@ -144,7 +145,6 @@
 
             if (this.currentStep == 6) {
                 if (this.isHit) {
-                    //SetAssociativeSimulation.findCacheIndexToBeReplaced();
                     SetAssociativeSimulation.writeToMemory();
                 }
                 else {
@@ -198,6 +198,7 @@
                 $("#set-" + set + "-tag-" + cacheLine).removeAttr('class');
                 $("#set-" + set + "-valid-" + cacheLine).removeAttr('class');
                 $("#set-" + set + "-data-" + cacheLine).removeAttr('class');
+                $("#set-" + set + "-dirty-" + cacheLine).removeAttr('class');
             }
         }
     },
@@ -208,7 +209,6 @@
             url: 'SetAssociativeCacheSimulation/UpdateCache',
             async: false,
             success: function (response) {
-                var a = 5;
                 $.notify(response.cache[response.lastUpdatedSet].cacheUpdateTypeMessage, "success");
                 var lastUpdatedCacheLine = SetAssociativeSimulation.index;
                 var cache = response.cache[response.lastUpdatedSet];
@@ -228,8 +228,6 @@
                 Simulation.updateButtons();
             },
             error: function (response) {
-                console.log(response);
-                var a = 7;
             }
         });
     },
@@ -283,7 +281,7 @@
             async: false,
             url: '/SetAssociativeCacheSimulation/GetCacheLineToBeReplaced',
             success: function (response) {
-                SetAssociativeSimulation.cacheIndexToBeReplaced = response.index;
+                SetAssociativeSimulation.index = response.index;
                 SetAssociativeSimulation.cacheSetToBeReplaced = response.set;
             }
         });
@@ -309,8 +307,8 @@
             async: false,
             url: '/SetAssociativeCacheSimulation/WriteToMemory',
             data: {
-                index: SetAssociativeSimulation.cacheIndexToBeReplaced,
-                set: SetAssociativeSimulation.cacheSetToBeReplaced
+                index: SetAssociativeSimulation.cacheSetToBeReplaced,
+                set: SetAssociativeSimulation.index,
             },
             success: function (response) {
                 SetAssociativeSimulation.updateUIAfterWrite(response);
@@ -323,7 +321,7 @@
     updateUIAfterWrite: function (response) {
         Simulation.currentMemoryAddress = response.cacheViewModel.currentMemoryAddress * Simulation.cacheLineSize;
         var memoryAddress = Simulation.currentMemoryAddress; //+ response.updatedPlaceInMemoryBlock;
-        var cacheIndex = SetAssociativeSimulation.cacheIndexToBeReplaced;
+        var cacheIndex = SetAssociativeSimulation.index;
         var cacheSet = SetAssociativeSimulation.cacheSetToBeReplaced;
 
         if (response.isCacheUpdated) {
@@ -358,8 +356,8 @@
             async: false,
             url: '/SetAssociativeCacheSimulation/UpdateMemory',
             data: {
-                index: SetAssociativeSimulation.cacheIndexToBeReplaced,
-                set: SetAssociativeSimulation.cacheSetToBeReplaced
+                index: SetAssociativeSimulation.cacheSetToBeReplaced,
+                set: SetAssociativeSimulation.index,
             },
             success: function (response) {
                 SetAssociativeSimulation.updateUIAfterWrite(response);

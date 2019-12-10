@@ -56,7 +56,7 @@ namespace CacheSimulator.Controllers
 
         public void CacheHit(Int32 index, Int32 set)
         {
-            _applicationService.UpdateStatistics(index, set);
+            _applicationService.UpdateStatistics(set, index);
         }
 
         [HttpGet]
